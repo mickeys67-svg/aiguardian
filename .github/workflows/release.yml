@@ -12,11 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Week 1~4: Mac 단독. Week 5 부터 windows-latest 추가.
+          # Win 우선 (ADR-0002): 메인 베타 채널.
+          - platform: windows-latest
+            args: ""
+          # Mac unsigned: 베타 ~20명, "우클릭 → 열기" 안내. Notarization은 Apple Developer 가입 후.
           - platform: macos-latest
             args: "--target universal-apple-darwin"
-          # - platform: windows-latest
-          #   args: ""
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
@@ -37,13 +38,17 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Mac signing/notarization (시크릿은 Week 6 직전 등록):
+          # Mac signing/notarization (Apple Developer 가입 후 활성화):
           # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           # APPLE_ID: ${{ secrets.APPLE_ID }}
           # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          #
+          # Windows EV Cert (DigiCert 발급 후 활성화):
+          # WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          # WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         with:
           projectPath: apps/desktop
           tagName: ${{ github.ref_name }}

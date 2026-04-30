@@ -16,41 +16,46 @@ packages/tip-engine   팁 인젝션 우선순위 큐
 services/backend      Cloudflare Workers + D1 + R2 (Hono)
 recipes/              레시피 메타·스크립트
 docs/                 제품 문서 + ADR
+scripts/              개발 환경 부트스트랩
 ```
 
-## 개발 시작
+## 첫 시작 (Windows 우선 — ADR-0002)
 
-```bash
-# 의존성 설치 (pnpm 9 + Rust 1.77+ 필요)
+```powershell
+# 1. 관리자 PowerShell에서 한 번만:
+cd E:\aiguardian
+.\scripts\bootstrap.ps1   # rustup + MSVC + WebView2 + Node 자동 설치
+
+# 2. 새 PowerShell 창에서:
 pnpm install
-
-# 데스크톱 앱 개발 모드 (Mac 우선)
-pnpm dev
-
-# 프로덕션 빌드
-pnpm build
+pnpm --filter @tg/desktop tauri dev   # 첫 빌드 5~10분
 ```
+
+자세한 가이드: [docs/dev-setup-windows.md](docs/dev-setup-windows.md)
+
+Mac은 GitHub Actions(macos-latest)에서 cargo CI만 돌고, 실기 GUI 테스트는 Week 5~6 베타 직전 1회 클라우드 Mac/지인 머신으로 검증 ([ADR-0002](docs/decisions/adr-0002-windows-first.md)).
 
 ## 결정 사항 (2026-04-30)
 
-- **OS**: Mac 우선 → Win 포팅 (Week 5~)
-- **AI 클라이언트 1차**: Claude Desktop + Claude Code + Cursor
-- **인력**: 본인 + Claude(코딩 파트너)
-- **브랜드**: 가코드명 `TG` → Week 4~5 확정
+| 항목 | 값 | ADR |
+| --- | --- | --- |
+| 앱 셸 | Tauri 2.0 + React + TS + Rust | [0001](docs/decisions/adr-0001-tauri.md) |
+| OS 우선 | **Win 우선 → Mac은 CI + 클라우드 검증** | [0002](docs/decisions/adr-0002-windows-first.md) |
+| 1차 AI | Claude Desktop + Claude Code + Cursor | — |
+| 인력 | 본인 + Claude(코딩 파트너) | — |
+| 브랜드 | 가코드명 `TG` → Week 4~5 확정 | — |
 
-자세한 내용은 [docs/decisions/](docs/decisions/) 의 ADR 참조.
+## 6주 MVP 마일스톤 (조정됨)
 
-## 6주 MVP 마일스톤
-
-| Week | 산출물 |
-| --- | --- |
-| 1 | 모노레포 + Tauri "Hello TG" Mac 빌드 |
-| 2 | System Inspector + 온보딩 3화면 |
-| 3 | Tool Installer + Safety Net 기초 |
-| 4 | MCP Integrator 3종 + 첫 레시피 E2E |
-| 5 | 팁 시스템 + UX 다듬기 + Win 어댑터 |
-| 6 | Win 베타 빌드 + 코드 서명 + 100명 베타 |
+| Week | 산출물 | 상태 |
+| --- | --- | --- |
+| 1 | 모노레포 + Tauri 보일러플레이트 | ✅ |
+| 2 | System Inspector + 온보딩 3화면 | ✅ |
+| 3 | Tool Installer + Safety Net 기초 | ✅ |
+| 4 | MCP Integrator 3종 + 첫 레시피 E2E | ✅ |
+| 5 | 팁 시스템 + 에러 화면 + Mac CI 연결 + 클라우드 Mac 결정 | 🟡 (코드 ✅, Mac CI ✅, 클라우드 lease 보류) |
+| 6 | Win MSI + Mac unsigned dmg + 베타 (Win 80 + Mac 20) | ⬜ |
 
 ## 라이선스
 
-현재 클로즈드. v1.0 전 오픈소스 범위 결정 (ADR-0002 예정).
+현재 클로즈드. v1.0 전 오픈소스 범위 결정 (ADR-0003 예정).
