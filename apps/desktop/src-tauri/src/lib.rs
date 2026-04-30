@@ -19,6 +19,7 @@ pub fn run() {
         tracing::error!(?err, "storage init failed; falling back to in-memory only");
     }
 
+    #[allow(unused_mut)]
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_clipboard_manager::init())
