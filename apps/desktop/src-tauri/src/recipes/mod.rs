@@ -95,20 +95,10 @@ pub fn run_recipe_step(
         });
     }
 
-    // Windows: /S /C 로 외부 따옴표만 strip — 내부 따옴표 보존하여 경로 escape 안전.
-    let (program, args) = if cfg!(target_os = "windows") {
-        (
-            "cmd",
-            vec!["/S".to_string(), "/C".to_string(), effective],
-        )
-    } else {
-        ("/bin/sh", vec!["-c".to_string(), effective])
-    };
-
-    let output = std::process::Command::new(program)
-        .args(&args)
-        .output()
-        .map_err(|e| format!("실행 실패: {e}"))?;
+    // OS 별 셸 호출.
+    // Windows: raw_arg 로 Rust 의 자동 quoting 우회 — cmd /S /C "전체 명령" 형태로
+    //          내부 따옴표가 그대로 보존되어야 'if not exist "X" mkdir "X"' 가 동작.
+    let output = run_shell(&effective).map_err(|e| format!("실행 실패: {e}"))?;
 
     Ok(StepRunResult {
         step_id,
@@ -117,4 +107,21 @@ pub fn run_recipe_step(
         stderr: String::from_utf8_lossy(&output.stderr).to_string(),
         blocked: false,
     })
+}
+
+#[cfg(target_os = "windows")]
+fn run_shell(command: &str) -> std::io::Result<std::process::Output> {
+    use std::os::windows::process::CommandExt;
+    let mut cmd = std::process::Command::new("cmd");
+    // /S 가 외부 따옴표 한 쌍만 strip 하므로 명령 전체를 따옴표로 감싸 안전.
+    cmd.raw_arg(format!("/S /C \"{command}\""));
+    cmd.output()
+}
+
+#[cfg(not(target_os = "windows"))]
+fn run_shell(command: &str) -> std::io::Result<std::process::Output> {
+    std::process::Command::new("/bin/sh")
+        .arg("-c")
+        .arg(command)
+        .output()
 }
