@@ -28,9 +28,9 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://api.terminalguardian.kr/updates/{{target}}/{{arch}}/{{current_version}}"
+        "https://tg-backend.mickeys67.workers.dev/updates/{{target}}/{{current_version}}"
       ],
-      "pubkey": "REPLACE_WITH_PUBKEY_AT_WEEK_6"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFNDJBRUI3NTlFQTgxMDAKUldRQWdlcFp0NjVDTHZieTRPalZIN3F4bVZMNHlmbkltVmt4NUhwQ0V1RVY2NFdyeUhLWXNWV2cK"
     }
   },
   "bundle": {
