@@ -1,0 +1,21 @@
+{
+  "name": "@tg/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "lint": "echo \"(backend) lint TBD\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"(backend) tests TBD\""
+  },
+  "dependencies": {
+    "hono": "^4.6.10"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241112.0",
+    "typescript": "^5.6.3",
+    "wrangler": "^3.86.0"
+  }
+}

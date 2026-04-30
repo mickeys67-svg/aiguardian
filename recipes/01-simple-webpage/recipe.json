@@ -1,0 +1,32 @@
+{
+  "id": "01-simple-webpage",
+  "title": "간단 웹페이지",
+  "category": "web",
+  "difficulty": "입문",
+  "estMinutes": 15,
+  "description": "내 이름 + 사진 한 장 + 자기소개 페이지를 만들고 인터넷에 띄웁니다.",
+  "outcome": "친구한테 카톡으로 바로 공유 가능한 진짜 인터넷 주소를 받습니다.",
+  "requires": ["node", "git"],
+  "promptTemplate": "내 이름은 {{name}} 입니다. 자기소개 한 페이지를 만들어주세요. HTML 파일 하나로, 사진 자리는 <img placeholder>로 두고, 색상은 청록색(#4ECDC4) 톤으로 부드럽게.",
+  "featured": true,
+  "steps": [
+    {
+      "id": "init",
+      "title": "프로젝트 폴더 만들기",
+      "description": "당신만의 작업실 폴더를 만들어요.",
+      "command": "mkdir -p ~/projects/{{slug}} && cd ~/projects/{{slug}}"
+    },
+    {
+      "id": "write",
+      "title": "AI에게 받은 코드 저장",
+      "description": "AI가 보낸 HTML을 index.html로 저장합니다.",
+      "command": "cat > index.html"
+    },
+    {
+      "id": "deploy",
+      "title": "Cloudflare Pages로 배포",
+      "description": "5분 안에 인터넷에 띄워요.",
+      "command": "npx wrangler pages deploy ."
+    }
+  ]
+}

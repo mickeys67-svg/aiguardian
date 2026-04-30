@@ -1,0 +1,10 @@
+name = "tg-backend"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 binding. 실제 DB는 `wrangler d1 create tg` 후 ID 채움.
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "tg"
+# database_id = "REPLACE_ME"

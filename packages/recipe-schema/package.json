@@ -1,0 +1,19 @@
+{
+  "name": "@tg/recipe-schema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "echo \"(recipe-schema) lint TBD\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"(recipe-schema) tests TBD\""
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

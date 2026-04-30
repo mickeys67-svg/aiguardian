@@ -1,0 +1,50 @@
+# Node
+node_modules/
+.pnpm-store/
+*.tsbuildinfo
+dist/
+build/
+.next/
+coverage/
+
+# Rust / Tauri
+target/
+**/*.rs.bk
+*.pdb
+apps/desktop/src-tauri/gen/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.cer
+*.key
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local DB / cache
+*.db
+*.db-journal
+.cache/
+
+# Cloudflare
+.wrangler/
+.dev.vars
