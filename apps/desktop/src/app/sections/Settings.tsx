@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useEnvironment } from "@/lib/hooks";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { checkMcp, inspectEnvironment, type McpStatus } from "@/lib/tauri";
+import {
+  checkMcp,
+  inspectEnvironment,
+  registerMcp,
+  type McpStatus,
+} from "@/lib/tauri";
 import { isOptedIn, setOptedIn } from "@/lib/telemetry";
 
 const AI_LABEL: Record<McpStatus["client"], string> = {
@@ -36,6 +41,22 @@ export function Settings() {
       await refetch();
     } finally {
       setRescanning(false);
+    }
+  };
+
+  const [connecting, setConnecting] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleConnect = async (client: McpStatus["client"]) => {
+    setConnecting(client);
+    setError(null);
+    try {
+      await registerMcp(client);
+      await qc.invalidateQueries({ queryKey: ["mcp-status"] });
+    } catch (e) {
+      setError(typeof e === "string" ? e : (e as Error).message);
+    } finally {
+      setConnecting(null);
     }
   };
 
@@ -93,15 +114,27 @@ export function Settings() {
             label={AI_LABEL[status!.client]}
             hint={status!.configPath}
           >
-            <span
-              className={`text-xs font-medium ${
-                status!.registered ? "text-success" : "text-subtle"
-              }`}
-            >
-              {status!.registered ? "✅ 연결됨" : "미연결"}
-            </span>
+            {status!.registered ? (
+              <span className="text-xs font-medium text-success">
+                ✅ 연결됨
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleConnect(status!.client)}
+                disabled={connecting === status!.client}
+                className="px-3 py-1 rounded-lg bg-primary text-white text-xs font-medium disabled:opacity-50 hover:opacity-90 transition"
+              >
+                {connecting === status!.client ? "연결 중..." : "지금 연결"}
+              </button>
+            )}
           </Row>
         ))}
+        {error && (
+          <div className="px-4 py-3 text-xs text-error bg-error/5 border-t border-error/20">
+            {error}
+          </div>
+        )}
       </Section>
 
       <Section title="앱 정보">

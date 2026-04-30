@@ -65,12 +65,47 @@ impl McpClient {
 }
 
 #[tauri::command]
-pub fn register_mcp(client: String, server_command: String, server_args: Vec<String>) -> Result<McpStatus, String> {
+pub fn register_mcp(
+    client: String,
+    server_command: Option<String>,
+    server_args: Option<Vec<String>>,
+) -> Result<McpStatus, String> {
     let c = McpClient::from_name(&client).ok_or_else(|| format!("알 수 없는 클라이언트: {client}"))?;
     let path = c
         .config_path()
         .ok_or_else(|| "이 OS에서는 지원되지 않는 클라이언트예요.".to_string())?;
-    register(c, &path, &server_command, &server_args).map_err(|e| e.to_string())
+
+    let (cmd, args) = match (server_command, server_args) {
+        (Some(c), Some(a)) => (c, a),
+        _ => default_mcp_invocation()?,
+    };
+
+    register(c, &path, &cmd, &args).map_err(|e| e.to_string())
+}
+
+/// dev 환경에서 workspace root 의 packages/mcp-server/dist/cli.js 자동 탐지.
+fn default_mcp_invocation() -> Result<(String, Vec<String>), String> {
+    let start = std::env::current_dir()
+        .map_err(|e| format!("작업 디렉토리를 못 찾았어요: {e}"))?;
+    let cli = find_mcp_cli(&start).ok_or_else(|| {
+        "MCP 서버 빌드를 못 찾았어요. 'pnpm --filter @tg/mcp-server build' 한 번 실행 후 다시 연결해주세요.".to_string()
+    })?;
+    Ok((
+        "node".to_string(),
+        vec![cli.to_string_lossy().to_string()],
+    ))
+}
+
+fn find_mcp_cli(start: &Path) -> Option<PathBuf> {
+    let mut current = Some(start.to_path_buf());
+    while let Some(dir) = current {
+        let candidate = dir.join("packages/mcp-server/dist/cli.js");
+        if candidate.exists() {
+            return Some(candidate);
+        }
+        current = dir.parent().map(|p| p.to_path_buf());
+    }
+    None
 }
 
 #[tauri::command]

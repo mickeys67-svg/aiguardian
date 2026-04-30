@@ -64,13 +64,13 @@ export async function checkMcp(client: McpStatus["client"]): Promise<McpStatus> 
 
 export async function registerMcp(
   client: McpStatus["client"],
-  serverCommand: string,
-  serverArgs: string[],
+  serverCommand?: string,
+  serverArgs?: string[],
 ): Promise<McpStatus> {
   return invoke<McpStatus>("register_mcp", {
     client,
-    serverCommand,
-    serverArgs,
+    serverCommand: serverCommand ?? null,
+    serverArgs: serverArgs ?? null,
   });
 }
 
