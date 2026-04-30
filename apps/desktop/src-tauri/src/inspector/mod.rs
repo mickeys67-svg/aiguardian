@@ -95,9 +95,13 @@ fn scan_now() -> Environment {
     };
 
     let ai_clients = vec![
-        ai_client("claude_desktop", claude_desktop_config()),
-        ai_client("claude_code", claude_code_config()),
-        ai_client("cursor", cursor_config()),
+        detect_ai_client(
+            "claude_desktop",
+            &claude_desktop_app_paths(),
+            claude_desktop_config(),
+        ),
+        detect_ai_client("claude_code", &claude_code_app_paths(), claude_code_config()),
+        detect_ai_client("cursor", &cursor_app_paths(), cursor_config()),
     ];
 
     Environment {
@@ -138,20 +142,45 @@ fn home() -> Option<PathBuf> {
     dirs::home_dir()
 }
 
-fn ai_client(name: &str, config_path: Option<PathBuf>) -> AiClientStatus {
-    let installed = config_path.as_ref().map(|p| p.exists()).unwrap_or(false);
-    let mcp_ready = installed
-        && config_path
-            .as_ref()
-            .and_then(|p| p.parent())
-            .map(|p| p.exists())
-            .unwrap_or(false);
+/// 설치 여부는 앱 실행 파일/번들 경로로, MCP 준비는 config 파일 쓰기 가능 여부로 분리.
+fn detect_ai_client(
+    name: &str,
+    app_paths: &[PathBuf],
+    config_path: Option<PathBuf>,
+) -> AiClientStatus {
+    let installed = app_paths.iter().any(|p| p.exists());
+
+    // MCP ready: config 파일이 이미 존재하거나, 부모 디렉토리가 존재해서 우리가 쓸 수 있음.
+    let mcp_ready = config_path
+        .as_ref()
+        .map(|p| {
+            p.exists()
+                || p.parent().map(|parent| parent.exists()).unwrap_or(false)
+        })
+        .unwrap_or(false);
+
     AiClientStatus {
         name: name.to_string(),
         installed,
-        mcp_ready,
+        mcp_ready: installed && mcp_ready,
         config_path: config_path.map(|p| p.to_string_lossy().to_string()),
     }
+}
+
+fn claude_desktop_app_paths() -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Some(h) = home() {
+        if cfg!(target_os = "macos") {
+            paths.push(PathBuf::from("/Applications/Claude.app"));
+            paths.push(h.join("Applications/Claude.app"));
+            paths.push(h.join("Library/Application Support/Claude"));
+        } else if cfg!(target_os = "windows") {
+            paths.push(h.join("AppData/Local/AnthropicClaude/Claude.exe"));
+            paths.push(h.join("AppData/Local/Programs/Claude/Claude.exe"));
+            paths.push(h.join("AppData/Roaming/Claude"));
+        }
+    }
+    paths
 }
 
 fn claude_desktop_config() -> Option<PathBuf> {
@@ -165,10 +194,58 @@ fn claude_desktop_config() -> Option<PathBuf> {
     }
 }
 
+fn claude_code_app_paths() -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Some(h) = home() {
+        // Claude Code 는 CLI. 설치되면 ~/.claude/ 디렉토리 또는 PATH 의 claude 바이너리.
+        paths.push(h.join(".claude"));
+    }
+    if let Some(claude) = which("claude") {
+        paths.push(claude);
+    }
+    paths
+}
+
 fn claude_code_config() -> Option<PathBuf> {
     home().map(|h| h.join(".claude/settings.json"))
 }
 
+fn cursor_app_paths() -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Some(h) = home() {
+        if cfg!(target_os = "macos") {
+            paths.push(PathBuf::from("/Applications/Cursor.app"));
+            paths.push(h.join("Applications/Cursor.app"));
+        } else if cfg!(target_os = "windows") {
+            paths.push(h.join("AppData/Local/Programs/cursor/Cursor.exe"));
+            paths.push(h.join("AppData/Local/cursor/Cursor.exe"));
+        }
+    }
+    if let Some(cursor) = which("cursor") {
+        paths.push(cursor);
+    }
+    paths
+}
+
 fn cursor_config() -> Option<PathBuf> {
     home().map(|h| h.join(".cursor/mcp.json"))
+}
+
+/// PATH 에서 명령 찾기 (which/where 호출 없이 직접 lookup)
+fn which(cmd: &str) -> Option<PathBuf> {
+    let exts: &[&str] = if cfg!(target_os = "windows") {
+        &[".exe", ".cmd", ".bat", ""]
+    } else {
+        &[""]
+    };
+    let path_var = std::env::var_os("PATH")?;
+    for dir in std::env::split_paths(&path_var) {
+        for ext in exts {
+            let candidate = dir.join(format!("{cmd}{ext}"));
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
+    }
+    None
 }

@@ -10,6 +10,9 @@ const FRIENDLY_TRANSLATIONS: Array<{ pattern: RegExp; ko: string }> = [
   { pattern: /no such file or directory/i, ko: "그 폴더나 파일이 없어요. 위치를 다시 확인할게요." },
   { pattern: /address already in use/i, ko: "그 포트가 이미 다른 프로그램이 쓰고 있어요." },
   { pattern: /network is unreachable|getaddrinfo|enotfound/i, ko: "인터넷 연결이 잠깐 끊긴 것 같아요." },
+  { pattern: /syntax of the command is incorrect|filename.*syntax is incorrect/i, ko: "명령어 형식이 컴퓨터에 안 맞았어요. 가디언이 더 안전하게 다시 써줄게요." },
+  { pattern: /the system cannot find the (path|file)/i, ko: "그 폴더나 파일을 못 찾았어요. 가디언이 만들어 드릴게요." },
+  { pattern: /access (is )?denied/i, ko: "권한이 부족해요. 관리자 권한이 필요할 수 있어요." },
 ];
 
 function translate(message: string): string {

@@ -95,8 +95,12 @@ pub fn run_recipe_step(
         });
     }
 
+    // Windows: /S /C 로 외부 따옴표만 strip — 내부 따옴표 보존하여 경로 escape 안전.
     let (program, args) = if cfg!(target_os = "windows") {
-        ("cmd", vec!["/C".to_string(), effective])
+        (
+            "cmd",
+            vec!["/S".to_string(), "/C".to_string(), effective],
+        )
     } else {
         ("/bin/sh", vec!["-c".to_string(), effective])
     };
