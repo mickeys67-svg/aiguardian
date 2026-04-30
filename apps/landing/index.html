@@ -320,7 +320,7 @@
     <script>
       // 환경설정 — Cloudflare Pages 배포 시 BACKEND_URL 을 환경변수 또는 빌드 치환.
       // 기본값은 production 도메인. 로컬 dev 시엔 localStorage 로 override 가능.
-      const DEFAULT_BACKEND = "https://api.terminalguardian.kr";
+      const DEFAULT_BACKEND = "https://tg-backend.mickeys67.workers.dev";
       const BACKEND =
         localStorage.getItem("tg.backend.override") || DEFAULT_BACKEND;
 

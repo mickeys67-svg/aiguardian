@@ -7,15 +7,14 @@ compatibility_flags = ["nodejs_compat"]
 # GH_TOKEN 은 secret 으로만 (`wrangler secret put GH_TOKEN`).
 [vars]
 GH_OWNER = "mickeys67-svg"
-GH_REPO  = "aiguardian"
+GH_REPO = "aiguardian"
 
-# D1 — `wrangler d1 create tg` 후 ID 채움.
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "tg"
-# database_id = "REPLACE_ME"
+[[d1_databases]]
+binding = "DB"
+database_name = "tg"
+database_id = "7315467a-2767-42d0-86ba-47695a1427f8"
 
-# KV — `wrangler kv namespace create CACHE` 후 ID 채움.
+# KV — id 는 `wrangler kv namespace create CACHE` 출력 후 채움.
 # [[kv_namespaces]]
 # binding = "CACHE"
 # id = "REPLACE_ME"
