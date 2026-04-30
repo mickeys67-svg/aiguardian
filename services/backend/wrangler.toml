@@ -6,8 +6,8 @@ compatibility_flags = ["nodejs_compat"]
 # vars 는 deploy-all.ps1 가 wrangler 명령으로 채움 (또는 GitHub Actions secret).
 # GH_TOKEN 은 secret 으로만 (`wrangler secret put GH_TOKEN`).
 [vars]
-GH_OWNER = "REPLACE_ME"
-GH_REPO  = "REPLACE_ME"
+GH_OWNER = "mickeys67-svg"
+GH_REPO  = "aiguardian"
 
 # D1 — `wrangler d1 create tg` 후 ID 채움.
 # [[d1_databases]]
