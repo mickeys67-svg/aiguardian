@@ -14,19 +14,22 @@
       "id": "init",
       "title": "프로젝트 폴더 만들기",
       "description": "당신만의 작업실 폴더를 만들어요.",
-      "command": "mkdir -p ~/projects/{{slug}} && cd ~/projects/{{slug}}"
+      "command": "mkdir -p $HOME/projects/tg-webpage",
+      "windowsCommand": "if not exist \"%USERPROFILE%\\projects\\tg-webpage\" mkdir \"%USERPROFILE%\\projects\\tg-webpage\""
     },
     {
-      "id": "write",
-      "title": "AI에게 받은 코드 저장",
-      "description": "AI가 보낸 HTML을 index.html로 저장합니다.",
-      "command": "cat > index.html"
+      "id": "verify",
+      "title": "폴더 확인",
+      "description": "방금 만든 폴더가 잘 있는지 확인해요.",
+      "command": "ls $HOME/projects/tg-webpage",
+      "windowsCommand": "dir \"%USERPROFILE%\\projects\\tg-webpage\""
     },
     {
-      "id": "deploy",
-      "title": "Cloudflare Pages로 배포",
-      "description": "5분 안에 인터넷에 띄워요.",
-      "command": "npx wrangler pages deploy ."
+      "id": "ready",
+      "title": "다음 단계 준비",
+      "description": "이제 AI에게 코드를 받아 이 폴더에 저장할 거예요. (Stage 6 실행 화면에서 계속)",
+      "command": "echo 첫 레시피 준비 완료. 다음에 AI에게 받은 HTML 을 index.html 로 저장하면 됩니다.",
+      "windowsCommand": "echo 첫 레시피 준비 완료. 다음에 AI에게 받은 HTML 을 index.html 로 저장하면 됩니다."
     }
   ]
 }

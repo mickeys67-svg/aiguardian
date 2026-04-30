@@ -14,8 +14,12 @@ pub struct RecipeStep {
     pub id: String,
     pub title: String,
     pub description: String,
+    /// Unix(macOS/Linux)에서 실행할 명령
     #[serde(default)]
     pub command: Option<String>,
+    /// Windows에서 실행할 명령 (cmd 호환). 없으면 command 사용.
+    #[serde(default)]
+    pub windows_command: Option<String>,
     #[serde(default)]
     pub optional: bool,
 }
@@ -61,9 +65,17 @@ pub fn list_recipes() -> Result<Vec<Recipe>, String> {
 pub fn run_recipe_step(
     step_id: String,
     command: String,
+    windows_command: Option<String>,
     dry: Option<bool>,
 ) -> Result<StepRunResult, String> {
-    if safety::is_blacklisted(&command) {
+    // OS 적합한 명령 선택
+    let effective = if cfg!(target_os = "windows") {
+        windows_command.unwrap_or_else(|| command.clone())
+    } else {
+        command.clone()
+    };
+
+    if safety::is_blacklisted(&effective) {
         return Ok(StepRunResult {
             step_id,
             success: false,
@@ -77,16 +89,16 @@ pub fn run_recipe_step(
         return Ok(StepRunResult {
             step_id,
             success: true,
-            stdout: format!("(dry-run) 실행 예정: {command}"),
+            stdout: format!("(dry-run) 실행 예정: {effective}"),
             stderr: String::new(),
             blocked: false,
         });
     }
 
     let (program, args) = if cfg!(target_os = "windows") {
-        ("cmd", vec!["/C".to_string(), command.clone()])
+        ("cmd", vec!["/C".to_string(), effective])
     } else {
-        ("/bin/sh", vec!["-c".to_string(), command.clone()])
+        ("/bin/sh", vec!["-c".to_string(), effective])
     };
 
     let output = std::process::Command::new(program)

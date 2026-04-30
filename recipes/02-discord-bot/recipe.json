@@ -12,27 +12,24 @@
   "steps": [
     {
       "id": "init",
-      "title": "프로젝트 폴더 만들기",
-      "description": "당신만의 작업실 폴더를 만들어요.",
-      "command": "mkdir -p ~/projects/{{slug}} && cd ~/projects/{{slug}} && npm init -y"
+      "title": "프로젝트 폴더 + npm init",
+      "description": "Node 프로젝트 골격을 만들어요.",
+      "command": "mkdir -p $HOME/projects/tg-discord && cd $HOME/projects/tg-discord && npm init -y",
+      "windowsCommand": "if not exist \"%USERPROFILE%\\projects\\tg-discord\" mkdir \"%USERPROFILE%\\projects\\tg-discord\" && cd /d \"%USERPROFILE%\\projects\\tg-discord\" && npm init -y"
     },
     {
       "id": "install",
       "title": "discord.js 설치",
-      "description": "디스코드 봇을 만드는 데 필요한 라이브러리예요.",
-      "command": "npm install discord.js dotenv"
+      "description": "디스코드 봇 라이브러리 + dotenv 를 설치해요.",
+      "command": "cd $HOME/projects/tg-discord && npm install discord.js dotenv",
+      "windowsCommand": "cd /d \"%USERPROFILE%\\projects\\tg-discord\" && npm install discord.js dotenv"
     },
     {
-      "id": "write",
-      "title": "AI에게 받은 코드 저장",
-      "description": "AI가 보낸 코드를 index.js로 저장합니다.",
-      "command": "cat > index.js"
-    },
-    {
-      "id": "run",
-      "title": "봇 실행",
-      "description": "환경변수 DISCORD_TOKEN 을 설정한 뒤 실행합니다.",
-      "command": "node index.js"
+      "id": "ready",
+      "title": "다음 단계 준비",
+      "description": "AI 에게 받은 봇 코드를 index.js 로 저장한 뒤 node index.js 로 실행할 거예요.",
+      "command": "echo 봇 폴더 준비 완료. 다음 단계에서 AI 코드를 저장하세요.",
+      "windowsCommand": "echo 봇 폴더 준비 완료. 다음 단계에서 AI 코드를 저장하세요."
     }
   ]
 }

@@ -79,6 +79,7 @@ export type RecipeStep = {
   title: string;
   description: string;
   command: string | null;
+  windowsCommand: string | null;
   optional: boolean;
 };
 
@@ -111,9 +112,15 @@ export async function listRecipes(): Promise<Recipe[]> {
 export async function runRecipeStep(
   stepId: string,
   command: string,
+  windowsCommand: string | null = null,
   dry = false,
 ): Promise<StepRunResult> {
-  return invoke<StepRunResult>("run_recipe_step", { stepId, command, dry });
+  return invoke<StepRunResult>("run_recipe_step", {
+    stepId,
+    command,
+    windowsCommand,
+    dry,
+  });
 }
 
 export type LearningProgress = {

@@ -13,26 +13,23 @@
     {
       "id": "init",
       "title": "프로젝트 폴더 만들기",
-      "description": "당신만의 작업실 폴더를 만들어요.",
-      "command": "mkdir -p ~/projects/{{slug}} && cd ~/projects/{{slug}}"
+      "description": "스크립트와 사진 폴더를 둘 작업실을 만들어요.",
+      "command": "mkdir -p $HOME/projects/tg-photo/input $HOME/projects/tg-photo/output",
+      "windowsCommand": "if not exist \"%USERPROFILE%\\projects\\tg-photo\\input\" mkdir \"%USERPROFILE%\\projects\\tg-photo\\input\" && if not exist \"%USERPROFILE%\\projects\\tg-photo\\output\" mkdir \"%USERPROFILE%\\projects\\tg-photo\\output\""
     },
     {
       "id": "install",
       "title": "Pillow 설치",
       "description": "Python 의 이미지 처리 라이브러리예요.",
-      "command": "pip install Pillow"
+      "command": "pip install Pillow",
+      "windowsCommand": "pip install Pillow"
     },
     {
-      "id": "write",
-      "title": "AI에게 받은 코드 저장",
-      "description": "AI가 보낸 코드를 resize.py로 저장합니다.",
-      "command": "cat > resize.py"
-    },
-    {
-      "id": "run",
-      "title": "리사이즈 실행",
-      "description": "input 폴더에 사진을 넣고 실행해요.",
-      "command": "python resize.py"
+      "id": "ready",
+      "title": "다음 단계 준비",
+      "description": "AI 에게 받은 스크립트를 resize.py 로 저장한 뒤 input 폴더에 사진 넣고 실행하면 돼요.",
+      "command": "echo 사진 리사이즈 준비 완료.",
+      "windowsCommand": "echo 사진 리사이즈 준비 완료."
     }
   ]
 }

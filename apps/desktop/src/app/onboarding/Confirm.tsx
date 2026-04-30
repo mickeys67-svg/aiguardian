@@ -45,7 +45,12 @@ export function Confirm() {
     const acc: StepRunResult[] = [];
     for (const step of recipe.steps) {
       if (!step.command) continue;
-      const r = await runRecipeStep(step.id, step.command, dry);
+      const r = await runRecipeStep(
+        step.id,
+        step.command,
+        step.windowsCommand ?? null,
+        dry,
+      );
       acc.push(r);
       setResults([...acc]);
       if (!r.success || r.blocked) {
@@ -90,6 +95,12 @@ export function Confirm() {
     );
   }
 
+  const allSuccess =
+    mode === "done" && results.length > 0 && results.every((r) => r.success && !r.blocked);
+  const hasFailure =
+    (mode === "done" || mode === "dry-done") &&
+    results.some((r) => !r.success || r.blocked);
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -98,18 +109,23 @@ export function Confirm() {
     >
       <header className="mb-6 text-center">
         <h2 className="text-2xl font-semibold text-ink mb-2">
-          {mode === "done"
+          {allSuccess
             ? "🎉 첫 레시피 완성!"
-            : mode === "dry-done"
-              ? "안전 미리보기 완료"
-              : "이제 함께 만들어볼게요"}
+            : hasFailure
+              ? "잠깐 멈췄어요"
+              : mode === "dry-done"
+                ? "안전 미리보기 완료"
+                : "이제 함께 만들어볼게요"}
         </h2>
         <p className="text-subtle text-sm">
           {mode === "idle" && "안전을 위해 먼저 dry-run으로 미리 확인해요."}
-          {mode === "dry-done" &&
+          {mode === "dry-done" && !hasFailure &&
             "차단된 명령 없어요. 실제 실행해도 안전해요."}
+          {mode === "dry-running" && "단계별 안전 확인 중..."}
           {mode === "running" && "실행 중이에요. 잠시만요..."}
-          {mode === "done" && "당신이 만든 첫 결과물이에요."}
+          {allSuccess && "당신이 만든 첫 결과물이에요."}
+          {hasFailure &&
+            "한 단계가 막혔어요. 아래 메시지를 보고 같이 풀어봐요."}
         </p>
       </header>
 
@@ -153,7 +169,7 @@ export function Confirm() {
         </p>
       )}
 
-      {mode === "done" && results.every((r) => r.success && !r.blocked) && (
+      {allSuccess && (
         <button
           type="button"
           onClick={finishOnboarding}
@@ -161,6 +177,28 @@ export function Confirm() {
         >
           TG 둘러보기 →
         </button>
+      )}
+
+      {hasFailure && (
+        <div className="mt-4 space-y-2">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("idle");
+              setResults([]);
+            }}
+            className="w-full px-6 py-2.5 rounded-xl bg-surface border border-subtle/20 text-sm hover:border-primary/40 transition"
+          >
+            다시 시도
+          </button>
+          <button
+            type="button"
+            onClick={finishOnboarding}
+            className="w-full px-6 py-2.5 rounded-xl bg-bg border border-subtle/15 text-xs text-subtle hover:text-ink transition"
+          >
+            건너뛰고 메인으로
+          </button>
+        </div>
       )}
 
       {results.length > 0 && (
