@@ -25,9 +25,18 @@
       "csp": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data: https:; connect-src 'self' https://*.terminalguardian.kr https://*.posthog.com https://*.sentry.io"
     }
   },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://api.terminalguardian.kr/updates/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "pubkey": "REPLACE_WITH_PUBKEY_AT_WEEK_6"
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "category": "DeveloperTool",
     "shortDescription": "바이브코딩 입문자를 위한 통합 가디언",
     "longDescription": "컴퓨터 켠 첫 순간부터 첫 앱 배포까지 끊김 없이 안내하는 데스크톱 가디언.",

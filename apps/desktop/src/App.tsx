@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { globalTipQueue, type TipPattern } from "@tg/tip-engine";
+import { track } from "./lib/telemetry";
 import { Welcome } from "./app/onboarding/Welcome";
 import { Diagnosis } from "./app/onboarding/Diagnosis";
 import { Result } from "./app/onboarding/Result";
@@ -48,6 +49,7 @@ export default function App() {
         ttlMs: 6000,
       });
     }
+    track("tg.stage.entered", { stage });
   }, [stage]);
 
   return (

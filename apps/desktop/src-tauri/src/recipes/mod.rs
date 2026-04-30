@@ -4,7 +4,9 @@
 use crate::safety;
 use serde::{Deserialize, Serialize};
 
-const BUNDLED: &str = include_str!("../../../../../recipes/01-simple-webpage/recipe.json");
+const BUNDLED_WEBPAGE: &str = include_str!("../../../../../recipes/01-simple-webpage/recipe.json");
+const BUNDLED_DISCORD: &str = include_str!("../../../../../recipes/02-discord-bot/recipe.json");
+const BUNDLED_PHOTO: &str = include_str!("../../../../../recipes/06-photo-resize/recipe.json");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -47,8 +49,12 @@ pub struct StepRunResult {
 
 #[tauri::command]
 pub fn list_recipes() -> Result<Vec<Recipe>, String> {
-    let recipe: Recipe = serde_json::from_str(BUNDLED).map_err(|e| e.to_string())?;
-    Ok(vec![recipe])
+    let mut out = Vec::with_capacity(3);
+    for json in [BUNDLED_WEBPAGE, BUNDLED_DISCORD, BUNDLED_PHOTO] {
+        let r: Recipe = serde_json::from_str(json).map_err(|e| e.to_string())?;
+        out.push(r);
+    }
+    Ok(out)
 }
 
 #[tauri::command]

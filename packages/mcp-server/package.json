@@ -3,12 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "bin": {
     "tg-mcp": "./dist/cli.js"
   },
+  "files": ["dist"],
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node ./dist/cli.js",
     "lint": "echo \"(mcp-server) lint TBD\"",
     "typecheck": "tsc --noEmit",
     "test": "echo \"(mcp-server) tests TBD\""

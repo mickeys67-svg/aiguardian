@@ -1,0 +1,15 @@
+{
+  "name": "@tg/landing",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler pages dev . --port 4321",
+    "deploy": "wrangler pages deploy .",
+    "lint": "echo \"(landing) lint TBD\"",
+    "typecheck": "echo \"(landing) static html — no typecheck\"",
+    "test": "echo \"(landing) tests TBD\""
+  },
+  "devDependencies": {
+    "wrangler": "^3.86.0"
+  }
+}

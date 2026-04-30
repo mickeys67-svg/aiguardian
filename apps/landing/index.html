@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TG · 컴맹도 30분이면 첫 앱 띄워요</title>
+    <meta
+      name="description"
+      content="컴퓨터 켠 첫 순간부터 첫 앱을 인터넷에 띄우는 그 순간까지. 끊김 없이 안내하는 가디언."
+    />
+    <meta property="og:title" content="TG — 바이브코딩 입문자를 위한 통합 가디언" />
+    <meta
+      property="og:description"
+      content="환경 진단 · 자동 설치 · AI 연결 · 첫 배포까지 한 도구로."
+    />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css"
+    />
+    <style>
+      :root {
+        --primary: #4ecdc4;
+        --ink: #1f2937;
+        --subtle: #6b7280;
+        --bg: #fafafa;
+        --surface: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          "Pretendard Variable",
+          Pretendard,
+          -apple-system,
+          BlinkMacSystemFont,
+          system-ui,
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      header {
+        padding: 24px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      header .brand {
+        font-weight: 700;
+        font-size: 20px;
+      }
+      header nav a {
+        color: var(--subtle);
+        text-decoration: none;
+        margin-left: 20px;
+        font-size: 14px;
+      }
+      .hero {
+        padding: 80px 0 60px;
+        text-align: center;
+      }
+      .hero h1 {
+        font-size: clamp(32px, 6vw, 56px);
+        line-height: 1.2;
+        margin: 0 0 16px;
+      }
+      .hero p {
+        font-size: 18px;
+        color: var(--subtle);
+        max-width: 540px;
+        margin: 0 auto 32px;
+      }
+      .cta {
+        display: inline-block;
+        padding: 14px 28px;
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: opacity 0.2s ease;
+      }
+      .cta:hover {
+        opacity: 0.9;
+      }
+      .cta-meta {
+        display: block;
+        margin-top: 12px;
+        color: var(--subtle);
+        font-size: 13px;
+      }
+      .features {
+        padding: 60px 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 24px;
+      }
+      .feature {
+        background: var(--surface);
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 24px;
+      }
+      .feature h3 {
+        margin: 0 0 8px;
+        font-size: 17px;
+      }
+      .feature p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--subtle);
+      }
+      .stages {
+        padding: 60px 0;
+      }
+      .stages h2 {
+        text-align: center;
+        font-size: 28px;
+        margin: 0 0 12px;
+      }
+      .stages p.lead {
+        text-align: center;
+        color: var(--subtle);
+        margin: 0 0 40px;
+      }
+      .stage-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .stage-list li {
+        background: var(--surface);
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 16px 20px;
+        font-size: 14px;
+      }
+      .stage-list strong {
+        display: block;
+        color: var(--primary);
+        font-size: 12px;
+        margin-bottom: 4px;
+        letter-spacing: 0.05em;
+      }
+      footer {
+        padding: 60px 0 40px;
+        color: var(--subtle);
+        font-size: 13px;
+        text-align: center;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 40px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        background: rgba(78, 205, 196, 0.1);
+        color: var(--primary);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="brand">TG</div>
+        <nav>
+          <a href="#features">기능</a>
+          <a href="#flow">10단계</a>
+          <a href="https://github.com/seungho/aiguardian">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <span class="badge">v0.1 베타 모집 중</span>
+        <h1>컴맹도 30분이면<br />첫 앱 띄워요.</h1>
+        <p>
+          AI로 앱을 만들 수 있다는 말은 들었지만 어디서부터 시작해야 할지 모르는
+          분들을 위한 데스크톱 가디언.
+        </p>
+        <a class="cta" href="#beta">베타 신청하기</a>
+        <span class="cta-meta">Mac · Windows · 무료 · 비밀번호 한 번만 물어봐요</span>
+      </section>
+
+      <section class="features" id="features">
+        <article class="feature">
+          <h3>한 번 다운로드 = 자동 진단·설치</h3>
+          <p>
+            터미널·Python·Git이 뭔지 몰라도 됩니다. 가디언이 부족한 도구를 안전하게 깔아드려요.
+          </p>
+        </article>
+        <article class="feature">
+          <h3>AI 자동 연결</h3>
+          <p>
+            Claude Desktop · Claude Code · Cursor에 MCP 다리를 자동으로 놓아드립니다.
+          </p>
+        </article>
+        <article class="feature">
+          <h3>입문자 안전망</h3>
+          <p>
+            위험 명령은 차단, 모든 액션은 되돌릴 수 있게. 망가뜨릴 걱정 없이 시도하세요.
+          </p>
+        </article>
+        <article class="feature">
+          <h3>30+ 시작 레시피</h3>
+          <p>
+            디스코드 봇 · 자기소개 페이지 · 사진 일괄 리사이즈... 첫 작품을 5~30분 안에.
+          </p>
+        </article>
+      </section>
+
+      <section class="stages" id="flow">
+        <h2>입문자 10단계 여정 전구간을 책임집니다</h2>
+        <p class="lead">
+          한 단계라도 막히면 코딩을 포기합니다. TG는 그 모든 막힘을 미리 풀어둡니다.
+        </p>
+        <ol class="stage-list">
+          <li>
+            <strong>STAGE 0</strong>
+            인지·동기 형성
+          </li>
+          <li>
+            <strong>STAGE 1</strong>
+            환경 자동 진단
+          </li>
+          <li>
+            <strong>STAGE 2</strong>
+            첫 프로젝트 선택
+          </li>
+          <li>
+            <strong>STAGE 3</strong>
+            도구 자동 설치
+          </li>
+          <li>
+            <strong>STAGE 4</strong>
+            AI 연결 (MCP)
+          </li>
+          <li>
+            <strong>STAGE 5</strong>
+            첫 코드 받기
+          </li>
+          <li>
+            <strong>STAGE 6</strong>
+            실행·결과 확인
+          </li>
+          <li>
+            <strong>STAGE 7</strong>
+            에러·디버깅
+          </li>
+          <li>
+            <strong>STAGE 8</strong>
+            완성·배포
+          </li>
+          <li>
+            <strong>STAGE 9</strong>
+            반복·성장·졸업
+          </li>
+        </ol>
+      </section>
+
+      <footer id="beta">
+        <p>
+          베타 메일링 신청은 <a href="mailto:beta@terminalguardian.kr">beta@terminalguardian.kr</a>
+        </p>
+        <p>© 2026 TG Project · 가코드명, 정식 브랜드 Week 4~5 확정</p>
+      </footer>
+    </div>
+  </body>
+</html>
