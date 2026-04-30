@@ -6,6 +6,7 @@ import { listRecipes, runRecipeStep, type StepRunResult } from "@/lib/tauri";
 import { copyErrorToClipboard } from "@/lib/roundtripper";
 import { ErrorPanel } from "@/app/ErrorPanel";
 import { globalTipQueue } from "@tg/tip-engine";
+import { useApp } from "../state";
 
 type Mode = "idle" | "dry-running" | "dry-done" | "running" | "done";
 
@@ -19,6 +20,7 @@ export function Confirm() {
   const [mode, setMode] = useState<Mode>("idle");
   const [results, setResults] = useState<StepRunResult[]>([]);
   const [errored, setErrored] = useState<StepRunResult | null>(null);
+  const finishOnboarding = useApp((s) => s.finishOnboarding);
 
   useEffect(() => {
     if (mode === "done" && results.every((r) => r.success && !r.blocked)) {
@@ -149,6 +151,16 @@ export function Confirm() {
             ? "단계별 안전 확인 중..."
             : "실제 실행 중..."}
         </p>
+      )}
+
+      {mode === "done" && results.every((r) => r.success && !r.blocked) && (
+        <button
+          type="button"
+          onClick={finishOnboarding}
+          className="w-full mt-3 px-6 py-3 rounded-xl bg-success text-white font-medium shadow-sm hover:opacity-90 transition"
+        >
+          TG 둘러보기 →
+        </button>
       )}
 
       {results.length > 0 && (

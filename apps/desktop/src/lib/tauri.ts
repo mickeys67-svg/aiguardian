@@ -128,3 +128,19 @@ export async function trackTerm(term: string, context?: string): Promise<void> {
 export async function learningProgress(): Promise<LearningProgress> {
   return invoke<LearningProgress>("learning_progress");
 }
+
+export type FileWriteResult = {
+  path: string;
+  bytes: number;
+};
+
+export async function writeFile(
+  path: string,
+  contents: string,
+): Promise<FileWriteResult> {
+  return invoke<FileWriteResult>("write_file", { path, contents });
+}
+
+export async function readFile(path: string): Promise<string> {
+  return invoke<string>("read_file", { path });
+}

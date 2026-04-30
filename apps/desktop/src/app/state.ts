@@ -8,10 +8,21 @@ export type OnboardingStage =
   | "recipe"
   | "confirm";
 
-interface OnboardingState {
+export type AppMode = "onboarding" | "main";
+
+export type MainSection = "home" | "recipes" | "projects" | "learn" | "settings";
+
+interface AppState {
+  mode: AppMode;
   stage: OnboardingStage;
+  section: MainSection;
+  selectedRecipeId: string | null;
+
   setStage: (s: OnboardingStage) => void;
   next: () => void;
+  finishOnboarding: () => void;
+  setSection: (s: MainSection) => void;
+  selectRecipe: (id: string | null) => void;
 }
 
 const ORDER: OnboardingStage[] = [
@@ -23,8 +34,17 @@ const ORDER: OnboardingStage[] = [
   "confirm",
 ];
 
-export const useOnboarding = create<OnboardingState>((set, get) => ({
+const STORAGE_KEY = "tg.app.mode";
+
+const initialMode: AppMode =
+  (localStorage.getItem(STORAGE_KEY) as AppMode | null) ?? "onboarding";
+
+export const useApp = create<AppState>((set, get) => ({
+  mode: initialMode,
   stage: "welcome",
+  section: "home",
+  selectedRecipeId: null,
+
   setStage: (stage) => set({ stage }),
   next: () => {
     const idx = ORDER.indexOf(get().stage);
@@ -33,4 +53,13 @@ export const useOnboarding = create<OnboardingState>((set, get) => ({
       if (nextStage) set({ stage: nextStage });
     }
   },
+  finishOnboarding: () => {
+    localStorage.setItem(STORAGE_KEY, "main");
+    set({ mode: "main", section: "home" });
+  },
+  setSection: (section) => set({ section }),
+  selectRecipe: (id) => set({ selectedRecipeId: id }),
 }));
+
+/** 호환용 별칭 — 기존 코드가 useOnboarding 으로 import. */
+export const useOnboarding = useApp;

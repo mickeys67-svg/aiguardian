@@ -1,3 +1,4 @@
+mod fileio;
 mod inspector;
 mod installer;
 mod learning;
@@ -41,6 +42,8 @@ pub fn run() {
             recipes::run_recipe_step,
             learning::track_term,
             learning::learning_progress,
+            fileio::write_file,
+            fileio::read_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TG");

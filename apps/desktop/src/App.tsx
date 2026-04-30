@@ -8,13 +8,15 @@ import { Goal } from "./app/onboarding/Goal";
 import { RecipePreview } from "./app/onboarding/RecipePreview";
 import { Confirm } from "./app/onboarding/Confirm";
 import { TipToast } from "./app/TipToast";
-import { useOnboarding } from "./app/state";
+import { Shell } from "./app/shell/Shell";
+import { useApp } from "./app/state";
 
 export default function App() {
-  const stage = useOnboarding((s) => s.stage);
+  const mode = useApp((s) => s.mode);
+  const stage = useApp((s) => s.stage);
 
-  // v0.9 §2.2 단계 진입 시 시점 트리거 팁 1개씩 푸시.
   useEffect(() => {
+    if (mode !== "onboarding") return;
     const map: Record<typeof stage, { pattern: TipPattern; message: string } | null> = {
       welcome: null,
       diagnosis: {
@@ -50,7 +52,16 @@ export default function App() {
       });
     }
     track("tg.stage.entered", { stage });
-  }, [stage]);
+  }, [mode, stage]);
+
+  if (mode === "main") {
+    return (
+      <>
+        <Shell />
+        <TipToast />
+      </>
+    );
+  }
 
   return (
     <main className="min-h-screen w-full flex items-center justify-center bg-bg">
