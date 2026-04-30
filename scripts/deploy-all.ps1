@@ -10,7 +10,7 @@
 #   - gh CLI (winget install GitHub.cli) + `gh auth login` 완료
 #   - wrangler (자동으로 npx 로 호출, 첫 회 `npx wrangler login`)
 
-#Requires -Version 7.0
+# PowerShell 5.1+ / PowerShell 7+ 모두 호환.
 [CmdletBinding()]
 param(
     [string]$GhOwner = "",

@@ -6,8 +6,7 @@
 #
 # 멱등성: 이미 설치된 패키지는 건너뜀. 안전하게 여러 번 실행 가능.
 
-#Requires -Version 7.0
-
+# PowerShell 5.1+ / PowerShell 7+ 모두 호환.
 $ErrorActionPreference = "Stop"
 
 function Write-Step {
