@@ -3,8 +3,24 @@ main = "src/index.ts"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
-# D1 binding. 실제 DB는 `wrangler d1 create tg` 후 ID 채움.
+# vars 는 deploy-all.ps1 가 wrangler 명령으로 채움 (또는 GitHub Actions secret).
+# GH_TOKEN 은 secret 으로만 (`wrangler secret put GH_TOKEN`).
+[vars]
+GH_OWNER = "REPLACE_ME"
+GH_REPO  = "REPLACE_ME"
+
+# D1 — `wrangler d1 create tg` 후 ID 채움.
 # [[d1_databases]]
 # binding = "DB"
 # database_name = "tg"
 # database_id = "REPLACE_ME"
+
+# KV — `wrangler kv namespace create CACHE` 후 ID 채움.
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "REPLACE_ME"
+
+# Custom domain — 도메인 등록 후 활성화.
+# [[routes]]
+# pattern = "api.terminalguardian.kr/*"
+# zone_name = "terminalguardian.kr"

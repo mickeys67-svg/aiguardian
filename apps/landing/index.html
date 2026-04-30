@@ -21,10 +21,12 @@
     <style>
       :root {
         --primary: #4ecdc4;
+        --primary-dark: #3eb8b0;
         --ink: #1f2937;
         --subtle: #6b7280;
         --bg: #fafafa;
         --surface: #ffffff;
+        --border: #e5e7eb;
       }
       * {
         box-sizing: border-box;
@@ -66,8 +68,11 @@
         margin-left: 20px;
         font-size: 14px;
       }
+      header nav a:hover {
+        color: var(--ink);
+      }
       .hero {
-        padding: 80px 0 60px;
+        padding: 64px 0 40px;
         text-align: center;
       }
       .hero h1 {
@@ -81,26 +86,55 @@
         max-width: 540px;
         margin: 0 auto 32px;
       }
+      .download {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
       .cta {
-        display: inline-block;
-        padding: 14px 28px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 32px;
         background: var(--primary);
         color: white;
         text-decoration: none;
         border-radius: 14px;
         font-weight: 600;
-        font-size: 16px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        transition: opacity 0.2s ease;
+        font-size: 17px;
+        box-shadow: 0 4px 16px rgba(78, 205, 196, 0.25);
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
       }
       .cta:hover {
-        opacity: 0.9;
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+      }
+      .cta:disabled {
+        background: var(--subtle);
+        cursor: not-allowed;
+      }
+      .cta-icon {
+        font-size: 20px;
       }
       .cta-meta {
-        display: block;
-        margin-top: 12px;
         color: var(--subtle);
         font-size: 13px;
+      }
+      .alt-downloads {
+        margin-top: 24px;
+        font-size: 13px;
+        color: var(--subtle);
+      }
+      .alt-downloads a {
+        color: var(--primary-dark);
+        text-decoration: none;
+        margin: 0 8px;
+      }
+      .alt-downloads a:hover {
+        text-decoration: underline;
       }
       .features {
         padding: 60px 0;
@@ -110,7 +144,7 @@
       }
       .feature {
         background: var(--surface);
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--border);
         border-radius: 16px;
         padding: 24px;
       }
@@ -141,63 +175,92 @@
         padding: 0;
         margin: 0;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
       }
       .stage-list li {
         background: var(--surface);
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--border);
         border-radius: 14px;
         padding: 16px 20px;
         font-size: 14px;
       }
       .stage-list strong {
         display: block;
-        color: var(--primary);
-        font-size: 12px;
+        color: var(--primary-dark);
+        font-size: 11px;
         margin-bottom: 4px;
         letter-spacing: 0.05em;
       }
       footer {
-        padding: 60px 0 40px;
+        padding: 48px 0 32px;
         color: var(--subtle);
         font-size: 13px;
         text-align: center;
-        border-top: 1px solid #e5e7eb;
+        border-top: 1px solid var(--border);
         margin-top: 40px;
+      }
+      footer a {
+        color: var(--primary-dark);
       }
       .badge {
         display: inline-block;
         padding: 4px 10px;
         background: rgba(78, 205, 196, 0.1);
-        color: var(--primary);
+        color: var(--primary-dark);
         border-radius: 999px;
         font-size: 12px;
         font-weight: 600;
         margin-bottom: 16px;
+      }
+      .version-pill {
+        display: inline-block;
+        font-size: 11px;
+        color: var(--subtle);
+        margin-left: 6px;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <header>
-        <div class="brand">TG</div>
+        <div class="brand">
+          TG
+          <span class="version-pill" id="version">v0.1</span>
+        </div>
         <nav>
           <a href="#features">기능</a>
           <a href="#flow">10단계</a>
-          <a href="https://github.com/seungho/aiguardian">GitHub</a>
+          <a href="#download">다운로드</a>
         </nav>
       </header>
 
-      <section class="hero">
+      <section class="hero" id="download">
         <span class="badge">v0.1 베타 모집 중</span>
         <h1>컴맹도 30분이면<br />첫 앱 띄워요.</h1>
         <p>
           AI로 앱을 만들 수 있다는 말은 들었지만 어디서부터 시작해야 할지 모르는
           분들을 위한 데스크톱 가디언.
         </p>
-        <a class="cta" href="#beta">베타 신청하기</a>
-        <span class="cta-meta">Mac · Windows · 무료 · 비밀번호 한 번만 물어봐요</span>
+
+        <div class="download">
+          <a class="cta" id="primary-download" href="#" rel="noopener">
+            <span class="cta-icon">⬇</span>
+            <span id="primary-label">다운로드 준비 중...</span>
+          </a>
+          <span class="cta-meta" id="primary-meta">
+            OS 자동 감지 · 무료 · 비밀번호 한 번만 물어봐요
+          </span>
+        </div>
+
+        <div class="alt-downloads">
+          <span>다른 OS:</span>
+          <a id="dl-win" href="#">Windows</a>·
+          <a id="dl-mac" href="#">Mac (Intel/M1)</a>·
+          <a id="dl-mac-arm" href="#">Mac M1/M2</a>·
+          <a id="dl-mac-intel" href="#">Mac Intel</a>·
+          <a id="dl-linux" href="#">Linux</a>
+        </div>
       </section>
 
       <section class="features" id="features">
@@ -233,55 +296,110 @@
           한 단계라도 막히면 코딩을 포기합니다. TG는 그 모든 막힘을 미리 풀어둡니다.
         </p>
         <ol class="stage-list">
-          <li>
-            <strong>STAGE 0</strong>
-            인지·동기 형성
-          </li>
-          <li>
-            <strong>STAGE 1</strong>
-            환경 자동 진단
-          </li>
-          <li>
-            <strong>STAGE 2</strong>
-            첫 프로젝트 선택
-          </li>
-          <li>
-            <strong>STAGE 3</strong>
-            도구 자동 설치
-          </li>
-          <li>
-            <strong>STAGE 4</strong>
-            AI 연결 (MCP)
-          </li>
-          <li>
-            <strong>STAGE 5</strong>
-            첫 코드 받기
-          </li>
-          <li>
-            <strong>STAGE 6</strong>
-            실행·결과 확인
-          </li>
-          <li>
-            <strong>STAGE 7</strong>
-            에러·디버깅
-          </li>
-          <li>
-            <strong>STAGE 8</strong>
-            완성·배포
-          </li>
-          <li>
-            <strong>STAGE 9</strong>
-            반복·성장·졸업
-          </li>
+          <li><strong>STAGE 0</strong>인지·동기 형성</li>
+          <li><strong>STAGE 1</strong>환경 자동 진단</li>
+          <li><strong>STAGE 2</strong>첫 프로젝트 선택</li>
+          <li><strong>STAGE 3</strong>도구 자동 설치</li>
+          <li><strong>STAGE 4</strong>AI 연결 (MCP)</li>
+          <li><strong>STAGE 5</strong>첫 코드 받기</li>
+          <li><strong>STAGE 6</strong>실행·결과 확인</li>
+          <li><strong>STAGE 7</strong>에러·디버깅</li>
+          <li><strong>STAGE 8</strong>완성·배포</li>
+          <li><strong>STAGE 9</strong>반복·성장·졸업</li>
         </ol>
       </section>
 
-      <footer id="beta">
+      <footer>
         <p>
-          베타 메일링 신청은 <a href="mailto:beta@terminalguardian.kr">beta@terminalguardian.kr</a>
+          베타 메일링: <a href="mailto:beta@terminalguardian.kr">beta@terminalguardian.kr</a>
         </p>
         <p>© 2026 TG Project · 가코드명, 정식 브랜드 Week 4~5 확정</p>
       </footer>
     </div>
+
+    <script>
+      // 환경설정 — Cloudflare Pages 배포 시 BACKEND_URL 을 환경변수 또는 빌드 치환.
+      // 기본값은 production 도메인. 로컬 dev 시엔 localStorage 로 override 가능.
+      const DEFAULT_BACKEND = "https://api.terminalguardian.kr";
+      const BACKEND =
+        localStorage.getItem("tg.backend.override") || DEFAULT_BACKEND;
+
+      function detectPlatform() {
+        const ua = navigator.userAgent.toLowerCase();
+        const platform = (navigator.platform || "").toLowerCase();
+        if (ua.includes("win") || platform.includes("win")) return "win";
+        if (ua.includes("mac") || platform.includes("mac")) {
+          // Apple Silicon 추정: navigator.userAgentData (Chromium) 또는
+          // userAgent의 'Intel Mac OS X' 부재로 판별.
+          // 100% 정확하지 않으니 universal 빌드를 우선 제공.
+          return "mac";
+        }
+        if (ua.includes("linux") || platform.includes("linux")) return "linux";
+        return null;
+      }
+
+      function platformLabel(p) {
+        switch (p) {
+          case "win":
+            return "Windows용 다운로드 (.exe)";
+          case "mac":
+            return "Mac용 다운로드 (.dmg)";
+          case "linux":
+            return "Linux용 다운로드 (.AppImage)";
+          default:
+            return "다운로드";
+        }
+      }
+
+      async function init() {
+        const detected = detectPlatform();
+        const primary = document.getElementById("primary-download");
+        const primaryLabel = document.getElementById("primary-label");
+        const primaryMeta = document.getElementById("primary-meta");
+        const versionEl = document.getElementById("version");
+
+        // 모든 다운로드 링크 wiring
+        const links = {
+          win: document.getElementById("dl-win"),
+          mac: document.getElementById("dl-mac"),
+          "mac-arm": document.getElementById("dl-mac-arm"),
+          "mac-intel": document.getElementById("dl-mac-intel"),
+          linux: document.getElementById("dl-linux"),
+        };
+        for (const [k, el] of Object.entries(links)) {
+          el.href = `${BACKEND}/download/${k}`;
+        }
+
+        // 메타 가져오기 (실패해도 GitHub Releases 전체 페이지로 fallback)
+        try {
+          const res = await fetch(`${BACKEND}/latest`, { mode: "cors" });
+          if (res.ok) {
+            const meta = await res.json();
+            versionEl.textContent = `v${meta.version}`;
+            primaryMeta.textContent = `최신 v${meta.version} · ${meta.assets.length}개 자산 · 무료`;
+          } else {
+            // 503 = release 없음. 베타 시작 전.
+            primaryLabel.textContent = "곧 다운로드 가능 — 베타 메일링 신청";
+            primary.href = "mailto:beta@terminalguardian.kr";
+            return;
+          }
+        } catch (e) {
+          // 백엔드 연결 안 됨. 메일링으로 fallback.
+          primaryLabel.textContent = "곧 다운로드 가능 — 베타 메일링 신청";
+          primary.href = "mailto:beta@terminalguardian.kr";
+          return;
+        }
+
+        if (detected) {
+          primary.href = `${BACKEND}/download/${detected}`;
+          primaryLabel.textContent = platformLabel(detected);
+        } else {
+          primaryLabel.textContent = "다운로드";
+          primary.href = "#download";
+        }
+      }
+
+      init();
+    </script>
   </body>
 </html>

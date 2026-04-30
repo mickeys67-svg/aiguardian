@@ -4,40 +4,60 @@ on:
   push:
     tags: ["v*.*.*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Tag name (e.g. v0.1.0). 비워두면 manual draft 만 생성."
+        required: false
 
 jobs:
   build:
     name: Build ${{ matrix.platform }}
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Win 우선 (ADR-0002): 메인 베타 채널.
+          # Win 우선 (ADR-0002)
           - platform: windows-latest
             args: ""
-          # Mac unsigned: 베타 ~20명, "우클릭 → 열기" 안내. Notarization은 Apple Developer 가입 후.
+          # Mac unsigned universal (Notarization 은 Apple Developer 가입 후)
           - platform: macos-latest
             args: "--target universal-apple-darwin"
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: "./apps/desktop/src-tauri -> target"
+
       - run: pnpm install --frozen-lockfile
+
+      # MCP 서버 빌드 (sidecar 로 번들될 수 있게 미리 dist 생성)
+      - run: pnpm --filter @tg/mcp-server build
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Tauri Updater 시그니처 키 (Week 6 발급).
+          # `cargo tauri signer generate -w ~/.tauri/tg.key` 로 생성 후
+          # public key는 tauri.conf.json 에, private key는 GitHub Secret 으로.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # Mac signing/notarization (Apple Developer 가입 후 활성화):
           # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -46,13 +66,41 @@ jobs:
           # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           #
-          # Windows EV Cert (DigiCert 발급 후 활성화):
+          # Windows EV Cert (DigiCert 발급 후):
           # WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
           # WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         with:
           projectPath: apps/desktop
-          tagName: ${{ github.ref_name }}
-          releaseName: "TG ${{ github.ref_name }}"
-          releaseDraft: true
+          tagName: ${{ github.event.inputs.version || github.ref_name }}
+          releaseName: "TG ${{ github.event.inputs.version || github.ref_name }}"
+          releaseBody: |
+            ## TG ${{ github.event.inputs.version || github.ref_name }}
+
+            **다운로드**: 백엔드 `/download/{win,mac,linux}` 또는 아래 자산 직접 다운로드.
+
+            **베타 안내**: Win MSI는 SmartScreen 경고가 뜰 수 있음(EV Cert 미발급). "추가 정보 → 실행" 클릭. Mac dmg는 unsigned이므로 우클릭 → 열기.
+
+            자세한 내용: https://terminalguardian.kr
+          releaseDraft: false
           prerelease: true
           args: ${{ matrix.args }}
+
+  notify-backend:
+    name: Invalidate backend cache
+    runs-on: ubuntu-latest
+    needs: build
+    if: success()
+    steps:
+      - name: Purge GitHub Releases cache on tg-backend
+        env:
+          BACKEND_PURGE_URL: ${{ secrets.BACKEND_PURGE_URL }}
+          BACKEND_PURGE_TOKEN: ${{ secrets.BACKEND_PURGE_TOKEN }}
+        run: |
+          if [ -z "$BACKEND_PURGE_URL" ]; then
+            echo "BACKEND_PURGE_URL not configured — skipping cache purge."
+            exit 0
+          fi
+          curl -fsSL -X POST "$BACKEND_PURGE_URL" \
+            -H "Authorization: Bearer $BACKEND_PURGE_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"key":"gh:latest-release"}'

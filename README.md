@@ -21,17 +21,34 @@ scripts/              개발 환경 부트스트랩
 
 ## 첫 시작 (Windows 우선 — ADR-0002)
 
+### 1) 개발 환경
 ```powershell
-# 1. 관리자 PowerShell에서 한 번만:
+# 관리자 PowerShell에서 한 번만:
 cd E:\aiguardian
-.\scripts\bootstrap.ps1   # rustup + MSVC + WebView2 + Node 자동 설치
+.\scripts\bootstrap.ps1            # rustup + MSVC + WebView2 + Node 자동 설치
 
-# 2. 새 PowerShell 창에서:
+# 새 PowerShell 창에서:
 pnpm install
 pnpm --filter @tg/desktop tauri dev   # 첫 빌드 5~10분
 ```
 
-자세한 가이드: [docs/dev-setup-windows.md](docs/dev-setup-windows.md)
+### 2) 서버 + 다운로드 페이지 배포
+```powershell
+# wrangler 로그인 (한 번만)
+pnpm exec wrangler login
+
+# Cloudflare D1 + KV + Workers + Pages + GitHub repo 일괄 셋업
+.\scripts\deploy-all.ps1 -GhOwner <github-username> -Domain terminalguardian.kr
+```
+
+### 3) 첫 배포·다운로드 테스트
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+# GitHub Actions 가 Win + Mac 빌드 → release → 백엔드 캐시 퍼지
+```
+
+자세한 가이드: [docs/dev-setup-windows.md](docs/dev-setup-windows.md), [docs/smoke-test.md](docs/smoke-test.md)
 
 Mac은 GitHub Actions(macos-latest)에서 cargo CI만 돌고, 실기 GUI 테스트는 Week 5~6 베타 직전 1회 클라우드 Mac/지인 머신으로 검증 ([ADR-0002](docs/decisions/adr-0002-windows-first.md)).
 

@@ -1,8 +1,19 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import {
+  buildUpdaterResponse,
+  fetchSignature,
+  getLatestRelease,
+  pickAsset,
+} from "./github.js";
 
 type Bindings = {
-  DB: D1Database;
+  DB?: D1Database;
+  CACHE?: KVNamespace;
+  GH_OWNER?: string;
+  GH_REPO?: string;
+  GH_TOKEN?: string;
+  PURGE_TOKEN?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -13,12 +24,12 @@ app.get("/health", (c) =>
   c.json({ ok: true, service: "tg-backend", version: "0.1.0" }),
 );
 
-// 레시피 메타 — Recipe Engine 가 부팅 시 캐시.
+// ────────────────────────────────────────────────────────────────────────────
+// 레시피
+// ────────────────────────────────────────────────────────────────────────────
+
 app.get("/recipes", async (c) => {
-  if (!c.env.DB) {
-    // 로컬 dev: D1 binding 없으면 빈 배열.
-    return c.json({ recipes: [] });
-  }
+  if (!c.env.DB) return c.json({ recipes: [] });
   const { results } = await c.env.DB.prepare(
     "SELECT id, title, category, difficulty, est_minutes as estMinutes, description, outcome, featured FROM recipes ORDER BY featured DESC, est_minutes ASC",
   ).all();
@@ -37,7 +48,10 @@ app.get("/recipes/:id", async (c) => {
   return c.json(row);
 });
 
-// 텔레메트리 — v0.9 §4.5 옵트인.
+// ────────────────────────────────────────────────────────────────────────────
+// 텔레메트리 (v0.9 §4.5 옵트인)
+// ────────────────────────────────────────────────────────────────────────────
+
 app.post("/telemetry", async (c) => {
   const body = await c.req.json().catch(() => null);
   if (!body || typeof body !== "object") {
@@ -47,11 +61,9 @@ app.post("/telemetry", async (c) => {
     string,
     unknown
   >;
-
   if (typeof event !== "string" || typeof anonId !== "string") {
     return c.json({ error: "missing fields" }, 400);
   }
-
   if (c.env.DB) {
     await c.env.DB.prepare(
       "INSERT INTO telemetry_events (event, anon_id, timestamp, app_version, props) VALUES (?, ?, ?, ?, ?)",
@@ -65,17 +77,178 @@ app.post("/telemetry", async (c) => {
       )
       .run();
   }
-
   return c.json({ accepted: true });
 });
 
-// 에러 패턴 — AI Roundtripper 가 로컬 DB miss 시 백엔드 조회.
 app.get("/error-patterns", async (c) => {
   if (!c.env.DB) return c.json({ patterns: [] });
   const { results } = await c.env.DB.prepare(
     "SELECT id, pattern, lang, solution, frequency FROM error_patterns ORDER BY frequency DESC LIMIT 200",
   ).all();
   return c.json({ patterns: results });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 다운로드 — GitHub Releases 프록시
+// ────────────────────────────────────────────────────────────────────────────
+
+/** 랜딩 페이지가 부르는 메타 — 최신 버전·자산 목록 */
+app.get("/latest", async (c) => {
+  const release = await getLatestRelease(c.env);
+  if (!release) {
+    return c.json(
+      {
+        error: "no release available",
+        hint: "GH_OWNER/GH_REPO env 설정 + 첫 GitHub Release 발행 필요",
+      },
+      503,
+    );
+  }
+  return c.json({
+    version: release.tag_name.replace(/^v/, ""),
+    publishedAt: release.published_at,
+    notes: release.body,
+    assets: release.assets.map((a) => ({
+      name: a.name,
+      size: a.size,
+      url: a.browser_download_url,
+    })),
+  });
+});
+
+/**
+ * 사용자 OS별 다운로드 진입점.
+ *   /download/win, /download/mac, /download/mac-arm, /download/mac-intel, /download/linux
+ * GitHub Releases 자산 URL로 302 redirect.
+ */
+app.get("/download/:platform", async (c) => {
+  const platform = c.req.param("platform");
+  const release = await getLatestRelease(c.env);
+  if (!release) {
+    return c.json({ error: "no release available" }, 503);
+  }
+
+  const asset = (() => {
+    switch (platform) {
+      case "win":
+      case "windows":
+        return pickAsset(release, "windows");
+      case "mac":
+        return pickAsset(release, "macos", "universal");
+      case "mac-arm":
+      case "mac-aarch64":
+        return pickAsset(release, "macos", "aarch64");
+      case "mac-intel":
+      case "mac-x64":
+        return pickAsset(release, "macos", "x64");
+      case "linux":
+        return pickAsset(release, "linux");
+      default:
+        return null;
+    }
+  })();
+
+  if (!asset) {
+    return c.json(
+      { error: "no matching asset", platform, release: release.tag_name },
+      404,
+    );
+  }
+  return c.redirect(asset.browser_download_url, 302);
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Tauri Updater 엔드포인트
+// 형식: /updates/{target}/{current_version}
+// target ∈ {darwin-aarch64, darwin-x86_64, windows-x86_64, linux-x86_64}
+// ────────────────────────────────────────────────────────────────────────────
+
+const UPDATER_TARGETS = [
+  "darwin-aarch64",
+  "darwin-x86_64",
+  "windows-x86_64",
+  "linux-x86_64",
+] as const;
+type UpdaterTarget = (typeof UPDATER_TARGETS)[number];
+
+app.get("/updates/:target/:current_version", async (c) => {
+  const target = c.req.param("target") as UpdaterTarget;
+  const current = c.req.param("current_version");
+
+  if (!UPDATER_TARGETS.includes(target)) {
+    return c.json({ error: "unknown target" }, 400);
+  }
+
+  const release = await getLatestRelease(c.env);
+  if (!release) {
+    return new Response(null, { status: 204 });
+  }
+
+  const latestVersion = release.tag_name.replace(/^v/, "");
+  if (compareVersions(latestVersion, current) <= 0) {
+    return new Response(null, { status: 204 });
+  }
+
+  const meta = buildUpdaterResponse(release, target);
+  if (!meta) {
+    return new Response(null, { status: 204 });
+  }
+
+  // .sig 파일 동봉 (Tauri Updater는 base64 또는 평문 시그니처 기대).
+  const sigAsset = release.assets.find(
+    (a) => a.name.toLowerCase() === `${getMatchingBundle(release, target)?.toLowerCase()}.sig`,
+  );
+  if (sigAsset) {
+    meta.signature = await fetchSignature(sigAsset.browser_download_url);
+  }
+
+  return c.json(meta);
+});
+
+function getMatchingBundle(
+  release: { assets: { name: string }[] },
+  target: UpdaterTarget,
+): string | null {
+  const lower = release.assets.map((a) => a.name);
+  const matchers: Record<UpdaterTarget, (n: string) => boolean> = {
+    "darwin-aarch64": (n) =>
+      n.toLowerCase().includes("aarch64") &&
+      n.toLowerCase().endsWith(".app.tar.gz"),
+    "darwin-x86_64": (n) =>
+      n.toLowerCase().includes("x64") && n.toLowerCase().endsWith(".app.tar.gz"),
+    "windows-x86_64": (n) => n.toLowerCase().endsWith(".nsis.zip"),
+    "linux-x86_64": (n) => n.toLowerCase().endsWith(".appimage.tar.gz"),
+  };
+  return lower.find(matchers[target]) ?? null;
+}
+
+/** 단순 SemVer 비교: 1 if a > b, -1 if a < b, 0 if equal */
+function compareVersions(a: string, b: string): number {
+  const ax = a.split(".").map((n) => parseInt(n, 10) || 0);
+  const bx = b.split(".").map((n) => parseInt(n, 10) || 0);
+  const len = Math.max(ax.length, bx.length);
+  for (let i = 0; i < len; i++) {
+    const av = ax[i] ?? 0;
+    const bv = bx[i] ?? 0;
+    if (av > bv) return 1;
+    if (av < bv) return -1;
+  }
+  return 0;
+}
+
+/** GitHub Actions release 직후 캐시 무효화. Bearer 토큰 필요. */
+app.post("/admin/purge", async (c) => {
+  const auth = c.req.header("authorization") ?? "";
+  const token = auth.replace(/^Bearer\s+/i, "");
+  if (!c.env.PURGE_TOKEN || token !== c.env.PURGE_TOKEN) {
+    return c.json({ error: "unauthorized" }, 401);
+  }
+  const body = await c.req.json().catch(() => ({}));
+  const key = (body as { key?: string }).key ?? "gh:latest-release";
+  if (c.env.CACHE) {
+    await c.env.CACHE.delete(key);
+  }
+  return c.json({ purged: key });
 });
 
 export default app;
