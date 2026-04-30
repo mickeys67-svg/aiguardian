@@ -1,6 +1,10 @@
 mod inspector;
 mod installer;
+mod learning;
+mod mcp;
+mod recipes;
 mod safety;
+mod storage;
 
 use tracing_subscriber::EnvFilter;
 
@@ -10,9 +14,23 @@ pub fn run() {
         .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
         .init();
 
+    if let Err(err) = storage::init() {
+        tracing::error!(?err, "storage init failed; falling back to in-memory only");
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![inspector::inspect_environment])
+        .invoke_handler(tauri::generate_handler![
+            inspector::inspect_environment,
+            installer::install_tool,
+            installer::dry_run,
+            mcp::register_mcp,
+            mcp::check_mcp,
+            recipes::list_recipes,
+            recipes::run_recipe_step,
+            learning::track_term,
+            learning::learning_progress,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running TG");
 }
