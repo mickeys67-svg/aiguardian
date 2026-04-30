@@ -4,9 +4,8 @@
 use crate::safety;
 use serde::{Deserialize, Serialize};
 
-const BUNDLED_WEBPAGE: &str = include_str!("../../../../../recipes/01-simple-webpage/recipe.json");
-const BUNDLED_DISCORD: &str = include_str!("../../../../../recipes/02-discord-bot/recipe.json");
-const BUNDLED_PHOTO: &str = include_str!("../../../../../recipes/06-photo-resize/recipe.json");
+// 20개 레시피 한 곳에 모음. 폴더별 recipe.json 은 v1.0 사용자 기여 시스템용으로 보존.
+const BUNDLED_INDEX: &str = include_str!("../../../../../recipes/index.json");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -53,12 +52,7 @@ pub struct StepRunResult {
 
 #[tauri::command]
 pub fn list_recipes() -> Result<Vec<Recipe>, String> {
-    let mut out = Vec::with_capacity(3);
-    for json in [BUNDLED_WEBPAGE, BUNDLED_DISCORD, BUNDLED_PHOTO] {
-        let r: Recipe = serde_json::from_str(json).map_err(|e| e.to_string())?;
-        out.push(r);
-    }
-    Ok(out)
+    serde_json::from_str(BUNDLED_INDEX).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
