@@ -16,3 +16,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@layer components {
+  .kbd {
+    @apply inline-block px-1.5 py-0.5 mx-0.5 text-[10px] font-mono font-medium rounded border border-subtle/30 bg-bg text-ink/80 align-middle;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+  }
+}
