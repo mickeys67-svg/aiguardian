@@ -5,7 +5,7 @@
 
 const TELEMETRY_KEY = "tg.telemetry.optedIn";
 const ANON_ID_KEY = "tg.anonId";
-const BACKEND = (import.meta.env.VITE_TG_BACKEND as string | undefined) ?? "https://api.terminalguardian.kr";
+const BACKEND = (import.meta.env.VITE_TG_BACKEND as string | undefined) ?? "https://api.vibemate.kr";
 
 type EventName =
   | "tg.stage.entered"

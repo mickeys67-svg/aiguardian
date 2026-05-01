@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data: https:; connect-src 'self' https://*.terminalguardian.kr https://*.posthog.com https://*.sentry.io"
+      "csp": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data: https:; connect-src 'self' https://*.vibemate.kr https://*.posthog.com https://*.sentry.io"
     }
   },
   "plugins": {

@@ -1,7 +1,7 @@
 # TG 배포 스크립트 — Cloudflare D1/KV/Workers/Pages + GitHub repo 일괄 셋업
 #
 # 처음 한 번만:
-#   .\scripts\deploy-all.ps1 -GhOwner <username> -GhRepo aiguardian -Domain terminalguardian.kr
+#   .\scripts\deploy-all.ps1 -GhOwner <username> -GhRepo aiguardian -Domain vibemate.kr
 #
 # 이미 설정된 상태에서 코드만 재배포:
 #   .\scripts\deploy-all.ps1 -RedeployOnly

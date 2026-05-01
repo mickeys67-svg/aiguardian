@@ -53,7 +53,7 @@ cd E:\aiguardian
 pnpm exec wrangler login
 
 # 풀 배포 (D1 + KV + Workers + Pages + GitHub repo 까지)
-.\scripts\deploy-all.ps1 -GhOwner <당신의-github-username> -Domain terminalguardian.kr
+.\scripts\deploy-all.ps1 -GhOwner <당신의-github-username> -Domain vibemate.kr
 ```
 
 도메인이 없으면 `-Domain` 생략. workers.dev 서브도메인 자동 부여.
@@ -154,7 +154,7 @@ curl -X POST https://tg-backend.<sub>.workers.dev/admin/purge `
 
 ## 5) 랜딩 페이지에서 다운로드
 
-브라우저로 pages.dev URL 또는 https://terminalguardian.kr (도메인 연결 후) 열기.
+브라우저로 pages.dev URL 또는 https://vibemate.kr (도메인 연결 후) 열기.
 
 **검증**:
 - 헤더에 `v0.1.0` 표시
@@ -264,7 +264,7 @@ curl "https://tg-backend.<sub>.workers.dev/updates/windows-x86_64/0.1.1"
 
 - [ ] Apple Developer 가입 → Mac Notarization secret 4종 release.yml 활성화
 - [ ] DigiCert EV Cert → Win 코드 서명 (SmartScreen 경고 제거)
-- [ ] terminalguardian.kr 도메인 등록 + Cloudflare DNS 연결
+- [ ] vibemate.kr 도메인 등록 + Cloudflare DNS 연결
 - [ ] PostHog 프로젝트 생성 → 백엔드 telemetry forwarder 추가 (현재는 D1 직접 저장)
 - [ ] Sentry DSN → Tauri 앱 + 백엔드 양쪽 등록
 - [ ] 베타 모집 카피 + 5개 채널 (노코드 카페·페북·카톡 오픈채팅) 발송

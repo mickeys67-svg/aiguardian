@@ -21,5 +21,5 @@ database_id = "7315467a-2767-42d0-86ba-47695a1427f8"
 
 # Custom domain — 도메인 등록 후 활성화.
 # [[routes]]
-# pattern = "api.terminalguardian.kr/*"
-# zone_name = "terminalguardian.kr"
+# pattern = "api.vibemate.kr/*"
+# zone_name = "vibemate.kr"

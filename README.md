@@ -38,7 +38,7 @@ pnpm --filter @tg/desktop tauri dev   # 첫 빌드 5~10분
 pnpm exec wrangler login
 
 # Cloudflare D1 + KV + Workers + Pages + GitHub repo 일괄 셋업
-.\scripts\deploy-all.ps1 -GhOwner <github-username> -Domain terminalguardian.kr
+.\scripts\deploy-all.ps1 -GhOwner <github-username> -Domain vibemate.kr
 ```
 
 ### 3) 첫 배포·다운로드 테스트

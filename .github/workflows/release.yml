@@ -78,7 +78,7 @@ jobs:
 
             **베타 안내**: Win MSI는 SmartScreen 경고가 뜰 수 있음(EV Cert 미발급). "추가 정보 → 실행" 클릭. Mac dmg는 unsigned이므로 우클릭 → 열기.
 
-            자세한 내용: https://terminalguardian.kr
+            자세한 내용: https://vibemate.kr
           releaseDraft: false
           prerelease: true
           args: ${{ matrix.args }}
