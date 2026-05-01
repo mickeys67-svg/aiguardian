@@ -2,6 +2,8 @@ name = "tg-backend"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
+# routes 가 있어도 workers.dev 서브도메인 유지 (디버깅·대체 진입점).
+workers_dev = true
 
 # vars 는 deploy-all.ps1 가 wrangler 명령으로 채움 (또는 GitHub Actions secret).
 # GH_TOKEN 은 secret 으로만 (`wrangler secret put GH_TOKEN`).
@@ -20,6 +22,7 @@ database_id = "7315467a-2767-42d0-86ba-47695a1427f8"
 # id = "REPLACE_ME"
 
 # Custom domain — vibemate.kr Cloudflare 등록 완료 (2026-05-02).
+# custom_domain = true → DNS + SSL 자동 생성.
 [[routes]]
-pattern = "api.vibemate.kr/*"
-zone_name = "vibemate.kr"
+pattern = "api.vibemate.kr"
+custom_domain = true
