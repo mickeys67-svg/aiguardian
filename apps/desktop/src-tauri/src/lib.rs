@@ -1,3 +1,4 @@
+mod aibridge;
 mod fileio;
 mod inspector;
 mod installer;
@@ -46,6 +47,15 @@ pub fn run() {
             learning::learning_progress,
             fileio::write_file,
             fileio::read_file,
+            aibridge::run_claude_print,
+            aibridge::ensure_folder,
+            aibridge::open_terminal_in,
+            aibridge::open_in_system,
+            aibridge::resolve_path,
+            aibridge::install_claude_code,
+            aibridge::serve_artifact,
+            aibridge::stop_serve_artifact,
+            aibridge::list_artifact_files,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TG");

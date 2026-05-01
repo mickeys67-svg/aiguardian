@@ -38,6 +38,15 @@ pub struct Recipe {
     pub steps: Vec<RecipeStep>,
     #[serde(default)]
     pub featured: bool,
+    /// 결과물 검증 방식 — 없으면 "html" 가정.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub verify_kind: Option<String>,
+    /// 결과를 띄울 때 실행할 명령 — 예: "npm run dev", "streamlit run app.py".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub run_command: Option<String>,
+    /// 결과 띄우기 후 접속할 로컬 주소 — 예: "http://localhost:5173".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub local_url: Option<String>,
 }
 
 #[derive(Debug, Serialize)]

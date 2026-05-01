@@ -5,9 +5,10 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "core:path:default",
     "shell:allow-open",
+    "shell:allow-spawn",
     "clipboard-manager:allow-write-text",
-    "clipboard-manager:allow-read-text",
     "dialog:allow-message",
     "dialog:allow-confirm",
     "opener:allow-open-url",

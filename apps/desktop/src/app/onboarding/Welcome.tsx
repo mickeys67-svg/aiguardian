@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useOnboarding } from "../state";
 import { isOptedIn, setOptedIn } from "@/lib/telemetry";
+import { AutoTerm } from "../components/AutoTerm";
 
 export function Welcome() {
   const next = useOnboarding((s) => s.next);
@@ -23,10 +24,13 @@ export function Welcome() {
         ✨
       </div>
       <h1 className="text-3xl font-bold text-ink mb-3">
-        안녕하세요. 컴퓨터 상태부터 봐드릴게요.
+        👋 안녕하세요
       </h1>
-      <p className="text-subtle mb-6">
-        걱정 마세요. 부족한 건 제가 다 깔아드릴게요. 비밀번호는 한 번만 물어봐요.
+      <p className="text-ink mb-3">
+        컴퓨터로 처음 뭔가를 만들어보려는 분이군요.
+      </p>
+      <p className="text-subtle mb-6 text-sm">
+        제가 30분 동안 옆에서 같이 갈게요. 부족한 건 다 깔아드릴게요.
       </p>
 
       <label className="flex items-center justify-center gap-2 mb-6 text-xs text-subtle cursor-pointer">
@@ -46,9 +50,9 @@ export function Welcome() {
         onClick={handleStart}
         className="px-6 py-3 rounded-xl bg-primary text-white font-medium shadow-sm hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-primary/40"
       >
-        시작할게요
+        시작
       </button>
-      <p className="mt-6 text-xs text-subtle">v0.1 · TG (Terminal Guardian)</p>
+      <p className="mt-6 text-xs text-subtle">v0.1 · 입문자용 가디언</p>
     </motion.section>
   );
 }

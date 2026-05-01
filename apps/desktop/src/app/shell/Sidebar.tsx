@@ -2,9 +2,9 @@ import { useApp, type MainSection } from "../state";
 
 const ITEMS: Array<{ id: MainSection; label: string; icon: string }> = [
   { id: "home", label: "홈", icon: "🏠" },
-  { id: "recipes", label: "레시피", icon: "📖" },
-  { id: "projects", label: "프로젝트", icon: "📁" },
-  { id: "learn", label: "학습", icon: "🎓" },
+  { id: "projects", label: "내 작품", icon: "📁" },
+  { id: "recipes", label: "레시피", icon: "🍱" },
+  { id: "learn", label: "배우기", icon: "📚" },
   { id: "settings", label: "설정", icon: "⚙️" },
 ];
 
@@ -15,8 +15,8 @@ export function Sidebar() {
   return (
     <aside className="w-56 shrink-0 border-r border-subtle/15 bg-surface flex flex-col">
       <div className="px-5 py-4 border-b border-subtle/10">
-        <p className="font-bold text-ink text-lg">TG</p>
-        <p className="text-[11px] text-subtle">v0.1 · Terminal Guardian</p>
+        <p className="font-bold text-ink text-lg">가디언</p>
+        <p className="text-[11px] text-subtle">v0.1 · 입문자 코딩 가디언</p>
       </div>
       <nav className="flex-1 py-3">
         {ITEMS.map((item) => (

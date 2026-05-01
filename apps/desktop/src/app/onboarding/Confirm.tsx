@@ -1,12 +1,18 @@
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import confetti from "canvas-confetti";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listRecipes, runRecipeStep, type StepRunResult } from "@/lib/tauri";
 import { copyErrorToClipboard } from "@/lib/roundtripper";
 import { ErrorPanel } from "@/app/ErrorPanel";
 import { globalTipQueue } from "@tg/tip-engine";
 import { useApp } from "../state";
+import { AutoTerm } from "../components/AutoTerm";
+import { TerminalCheatsheet } from "../components/TerminalCheatsheet";
+import {
+  shouldShowCheatsheet,
+  markCheatsheetSeen,
+  dismissCheatsheetForever,
+} from "@/lib/cheatsheet";
 
 type Mode = "idle" | "dry-running" | "dry-done" | "running" | "done";
 
@@ -15,26 +21,31 @@ export function Confirm() {
     queryKey: ["recipes"],
     queryFn: listRecipes,
   });
-  const recipe = recipes?.[0];
+  const selectedId = useApp((s) => s.selectedRecipeId);
+  const recipe = useMemo(
+    () =>
+      recipes?.find((r) => r.id === selectedId) ?? recipes?.[0] ?? null,
+    [recipes, selectedId],
+  );
 
   const [mode, setMode] = useState<Mode>("idle");
   const [results, setResults] = useState<StepRunResult[]>([]);
   const [errored, setErrored] = useState<StepRunResult | null>(null);
-  const finishOnboarding = useApp((s) => s.finishOnboarding);
+  // Confirm 첫 진입 시 단축키 치트시트 자동 노출. shared helper.
+  const [cheatsheetOpen, setCheatsheetOpen] = useState(shouldShowCheatsheet);
+  const next = useApp((s) => s.next);
 
   useEffect(() => {
-    if (mode === "done" && results.every((r) => r.success && !r.blocked)) {
-      void confetti({ particleCount: 140, spread: 75, origin: { y: 0.6 } });
-      globalTipQueue.enqueue({
-        id: "confirm-success",
-        pattern: "축하형",
-        trigger: "시점",
-        priority: 1,
-        message: "축하해요! 첫 레시피를 끝까지 돌렸어요. 진짜 시작이에요.",
-        ttlMs: 8000,
-      });
+    // results.length === 0 이면 vacuously every() = true 라 빈 자동 next 방지.
+    if (
+      mode === "done" &&
+      results.length > 0 &&
+      results.every((r) => r.success && !r.blocked)
+    ) {
+      const t = window.setTimeout(() => next(), 800);
+      return () => window.clearTimeout(t);
     }
-  }, [mode, results]);
+  }, [mode, results, next]);
 
   if (!recipe) return null;
 
@@ -54,8 +65,12 @@ export function Confirm() {
       acc.push(r);
       setResults([...acc]);
       if (!r.success || r.blocked) {
-        if (!dry && r.stderr) {
-          setErrored(r);
+        if (!dry) {
+          // stderr 비어있어도 ErrorPanel 띄우기 — 입문자에게 일관성 있는 안내.
+          setErrored({
+            ...r,
+            stderr: r.stderr || `'${step.title}' 단계가 실패했어요.`,
+          });
         }
         break;
       }
@@ -90,7 +105,11 @@ export function Confirm() {
       <ErrorPanel
         rawError={errored.stderr}
         onAskAi={handleAskAi}
-        onDismiss={() => setErrored(null)}
+        onDismiss={() => {
+          setErrored(null);
+          setMode("idle");
+          setResults([]);
+        }}
       />
     );
   }
@@ -110,20 +129,22 @@ export function Confirm() {
       <header className="mb-6 text-center">
         <h2 className="text-2xl font-semibold text-ink mb-2">
           {allSuccess
-            ? "🎉 첫 레시피 완성!"
+            ? "준비물 챙겼어요!"
             : hasFailure
               ? "잠깐 멈췄어요"
               : mode === "dry-done"
                 ? "안전 미리보기 완료"
-                : "이제 함께 만들어볼게요"}
+                : "준비물부터 챙길게요"}
         </h2>
         <p className="text-subtle text-sm">
-          {mode === "idle" && "안전을 위해 먼저 dry-run으로 미리 확인해요."}
+          {mode === "idle" && (
+            <AutoTerm>안전을 위해 먼저 dry-run 으로 미리 확인해요.</AutoTerm>
+          )}
           {mode === "dry-done" && !hasFailure &&
             "차단된 명령 없어요. 실제 실행해도 안전해요."}
           {mode === "dry-running" && "단계별 안전 확인 중..."}
           {mode === "running" && "실행 중이에요. 잠시만요..."}
-          {allSuccess && "당신이 만든 첫 결과물이에요."}
+          {allSuccess && "다음으로 AI에게 코드를 받아올게요."}
           {hasFailure &&
             "한 단계가 막혔어요. 아래 메시지를 보고 같이 풀어봐요."}
         </p>
@@ -139,26 +160,14 @@ export function Confirm() {
         </button>
       )}
 
-      {mode === "dry-done" && (
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={() => runSteps(false)}
-            className="w-full px-6 py-3 rounded-xl bg-primary text-white font-medium shadow-sm hover:opacity-90 transition"
-          >
-            진짜 실행할게요
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode("idle");
-              setResults([]);
-            }}
-            className="w-full px-6 py-2.5 rounded-xl bg-surface border border-subtle/20 text-subtle text-sm hover:text-ink transition"
-          >
-            다시 미리보기
-          </button>
-        </div>
+      {mode === "dry-done" && !hasFailure && (
+        <button
+          type="button"
+          onClick={() => runSteps(false)}
+          className="w-full px-6 py-3 rounded-xl bg-primary text-white font-medium shadow-sm hover:opacity-90 transition"
+        >
+          ✓ 진짜 실행할게요
+        </button>
       )}
 
       {(mode === "dry-running" || mode === "running") && (
@@ -170,13 +179,9 @@ export function Confirm() {
       )}
 
       {allSuccess && (
-        <button
-          type="button"
-          onClick={finishOnboarding}
-          className="w-full mt-3 px-6 py-3 rounded-xl bg-success text-white font-medium shadow-sm hover:opacity-90 transition"
-        >
-          TG 둘러보기 →
-        </button>
+        <p className="text-center text-sm text-subtle">
+          다음 단계로 자동 이동해요...
+        </p>
       )}
 
       {hasFailure && (
@@ -189,14 +194,7 @@ export function Confirm() {
             }}
             className="w-full px-6 py-2.5 rounded-xl bg-surface border border-subtle/20 text-sm hover:border-primary/40 transition"
           >
-            다시 시도
-          </button>
-          <button
-            type="button"
-            onClick={finishOnboarding}
-            className="w-full px-6 py-2.5 rounded-xl bg-bg border border-subtle/15 text-xs text-subtle hover:text-ink transition"
-          >
-            건너뛰고 메인으로
+            🔄 다시 시도
           </button>
         </div>
       )}
@@ -231,6 +229,18 @@ export function Confirm() {
           ))}
         </ol>
       )}
+
+      <TerminalCheatsheet
+        open={cheatsheetOpen}
+        onClose={() => {
+          markCheatsheetSeen();
+          setCheatsheetOpen(false);
+        }}
+        onNeverAgain={() => {
+          dismissCheatsheetForever();
+          setCheatsheetOpen(false);
+        }}
+      />
     </motion.section>
   );
 }
