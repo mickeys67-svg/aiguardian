@@ -18,7 +18,33 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use("*", cors({ origin: "*", allowHeaders: ["content-type"] }));
+// 보안 헤더 — 모든 응답에 일괄 적용.
+app.use("*", async (c, next) => {
+  await next();
+  c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("X-Frame-Options", "DENY");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  c.header("Permissions-Policy", "interest-cohort=()");
+});
+
+// CORS — 운영 도메인 화이트리스트. 데스크톱 앱은 tauri:// origin 또는 localhost.
+const ALLOWED_ORIGINS = [
+  "https://vibemate.kr",
+  "https://www.vibemate.kr",
+  "https://tg-landing.pages.dev",
+  "http://localhost:1420",
+  "http://localhost:4321",
+  "http://localhost:5173",
+  "tauri://localhost",
+];
+app.use(
+  "*",
+  cors({
+    origin: (origin) => (ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]),
+    allowHeaders: ["content-type"],
+  }),
+);
 
 app.get("/health", (c) =>
   c.json({ ok: true, service: "tg-backend", version: "0.1.0" }),
