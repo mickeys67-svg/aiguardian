@@ -12,6 +12,7 @@
     "dev": "pnpm --filter @tg/desktop tauri dev",
     "build": "pnpm --filter @tg/desktop tauri build",
     "lint": "pnpm -r --parallel lint",
+    "lint:recipes": "node scripts/lint-recipes.mjs",
     "typecheck": "pnpm -r --parallel typecheck",
     "test": "pnpm -r --parallel test",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""

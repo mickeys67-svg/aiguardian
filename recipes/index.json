@@ -10,6 +10,7 @@
     "requires": ["node", "git"],
     "promptTemplate": "내 이름은 {{name}} 입니다. 자기소개 한 페이지를 HTML 한 파일로 만들어주세요. 사진 자리는 <img placeholder>, 청록색(#4ECDC4) 톤.",
     "featured": true,
+    "verifyKind": "html",
     "steps": [
       { "id": "init", "title": "프로젝트 폴더", "description": "당신만의 작업실 폴더를 만들어요.",
         "command": "mkdir -p $HOME/projects/tg-webpage",
@@ -33,6 +34,7 @@
     "requires": ["node"],
     "promptTemplate": "Claude API 를 호출하는 단일 HTML 페이지를 만들어주세요. fetch 로 messages API 호출, 사용자 입력창 + 답변 영역. 키는 prompt() 로 입력받음.",
     "featured": true,
+    "verifyKind": "html",
     "steps": [
       { "id": "init", "title": "프로젝트 폴더", "description": "작업실 폴더를 만들어요.",
         "command": "mkdir -p $HOME/projects/tg-chat",
@@ -53,6 +55,8 @@
     "requires": ["node"],
     "promptTemplate": "discord.js 14 로 매일 저녁 8시 #{{channel}} 채널에 '오늘도 게임 시간!' 자동 발송. 봇 토큰은 환경변수 DISCORD_TOKEN.",
     "featured": true,
+    "verifyKind": "bot",
+    "runCommand": "node index.js",
     "steps": [
       { "id": "init", "title": "프로젝트 + npm init", "description": "Node 프로젝트 골격을 만들어요.",
         "command": "mkdir -p $HOME/projects/tg-discord && cd $HOME/projects/tg-discord && npm init -y",
@@ -76,6 +80,8 @@
     "requires": ["python3"],
     "promptTemplate": "Python 으로 텔레그램 봇을 만들어주세요. python-telegram-bot 사용. /start, /status 명령에 응답하고, 외부 신호 (간단 file watch) 시 채널에 자동 알림.",
     "featured": false,
+    "verifyKind": "bot",
+    "runCommand": "python bot.py",
     "steps": [
       { "id": "init", "title": "폴더 + venv", "description": "Python 가상환경을 준비해요.",
         "command": "mkdir -p $HOME/projects/tg-telegram && cd $HOME/projects/tg-telegram && python3 -m venv .venv",
@@ -99,6 +105,8 @@
     "requires": ["python3"],
     "promptTemplate": "Python 으로 매 5분마다 yfinance 또는 coingecko API 로 {{ticker}} 가격 확인, 임계값 도달 시 macOS 알림(macOS) 또는 Windows toast 알림.",
     "featured": false,
+    "verifyKind": "python",
+    "runCommand": "python price_alert.py",
     "steps": [
       { "id": "init", "title": "폴더 + venv", "description": "Python 가상환경.",
         "command": "mkdir -p $HOME/projects/tg-price && cd $HOME/projects/tg-price && python3 -m venv .venv",
@@ -122,6 +130,8 @@
     "requires": ["python3"],
     "promptTemplate": "Python 으로 입력 폴더의 jpg/png 를 가로 {{width}}px 비율 유지 리사이즈해 출력 폴더 저장. Pillow 사용, 한국어 진행 출력.",
     "featured": true,
+    "verifyKind": "data",
+    "runCommand": "python resize.py",
     "steps": [
       { "id": "init", "title": "input/output 폴더", "description": "원본·결과 폴더를 만들어요.",
         "command": "mkdir -p $HOME/projects/tg-photo/input $HOME/projects/tg-photo/output",
@@ -144,6 +154,9 @@
     "requires": ["node", "git"],
     "promptTemplate": "Vite + React + Tailwind 로 단일 페이지 포트폴리오 사이트. About / Projects / Contact 섹션. 색상은 {{theme}}.",
     "featured": false,
+    "verifyKind": "web",
+    "runCommand": "npm run dev",
+    "localUrl": "http://localhost:5173",
     "steps": [
       { "id": "init", "title": "Vite 프로젝트 생성", "description": "create-vite 로 React 골격.",
         "command": "cd $HOME/projects && npm create vite@latest tg-portfolio -- --template react-ts",
@@ -167,6 +180,7 @@
     "requires": ["node"],
     "promptTemplate": "단일 HTML 파일 틱택토. 두 명이 번갈아 클릭, 승자 표시 + 리셋 버튼. 폰트는 둥근 산세리프.",
     "featured": false,
+    "verifyKind": "html",
     "steps": [
       { "id": "init", "title": "프로젝트 폴더", "description": "작업실.",
         "command": "mkdir -p $HOME/projects/tg-game",
@@ -187,6 +201,8 @@
     "requires": ["python3"],
     "promptTemplate": "Python 으로 텍스트 파일에서 일정 추출 (정규식 또는 Claude API), Google Calendar API 로 이벤트 추가. credentials.json 사용.",
     "featured": false,
+    "verifyKind": "python",
+    "runCommand": "python calendar_bot.py",
     "steps": [
       { "id": "init", "title": "폴더 + venv", "description": "Python 환경.",
         "command": "mkdir -p $HOME/projects/tg-calendar && cd $HOME/projects/tg-calendar && python3 -m venv .venv",
@@ -210,6 +226,9 @@
     "requires": ["python3"],
     "promptTemplate": "Streamlit 으로 CSV 업로드 받아 일별 매출, 메뉴별 구성, 시간대별 그래프 자동. plotly 사용.",
     "featured": false,
+    "verifyKind": "web",
+    "runCommand": "streamlit run app.py",
+    "localUrl": "http://localhost:8501",
     "steps": [
       { "id": "init", "title": "폴더 + venv", "description": "Python 환경.",
         "command": "mkdir -p $HOME/projects/tg-dashboard && cd $HOME/projects/tg-dashboard && python3 -m venv .venv",
@@ -233,6 +252,8 @@
     "requires": ["node"],
     "promptTemplate": "Node 로 Slack incoming webhook 호출하는 단순 스크립트. 명령행 인자로 메시지 받음.",
     "featured": false,
+    "verifyKind": "cli",
+    "runCommand": "node notify.js \"메시지\"",
     "steps": [
       { "id": "init", "title": "폴더 + npm init", "description": "Node 프로젝트.",
         "command": "mkdir -p $HOME/projects/tg-slack && cd $HOME/projects/tg-slack && npm init -y",
@@ -255,6 +276,8 @@
     "outcome": "회의록·이력서를 한 줄로 PDF 변환.",
     "requires": ["node"],
     "promptTemplate": "Node 스크립트로 markdown 파일을 받아 marked + puppeteer 로 PDF 생성. CLI 인자로 입력 파일.",
+    "verifyKind": "data",
+    "runCommand": "node md2pdf.js input.md",
     "featured": false,
     "steps": [
       { "id": "init", "title": "프로젝트 폴더", "description": "작업실.",
@@ -278,6 +301,8 @@
     "outcome": "고객 리스트·매출 자료가 자동 정렬·중복 제거된 xlsx.",
     "requires": ["python3"],
     "promptTemplate": "Python 으로 CSV 읽고 중복 제거, 빈칸 채움, 날짜 정규화, openpyxl 로 헤더 굵게 + 자동 폭 조정 xlsx 저장.",
+    "verifyKind": "data",
+    "runCommand": "python clean.py input.csv",
     "featured": false,
     "steps": [
       { "id": "init", "title": "폴더 + venv", "description": "Python 환경.",
@@ -301,6 +326,9 @@
     "outcome": "tg.kr/abc 같은 자기 단축 URL.",
     "requires": ["node"],
     "promptTemplate": "Cloudflare Workers + KV 로 URL 단축기. POST /shorten 으로 새 키 생성, GET /:key 로 redirect.",
+    "verifyKind": "web",
+    "runCommand": "wrangler dev",
+    "localUrl": "http://localhost:8787",
     "featured": false,
     "steps": [
       { "id": "init", "title": "프로젝트 폴더", "description": "Wrangler 프로젝트.",
@@ -322,6 +350,7 @@
     "requires": ["python3"],
     "promptTemplate": "Python 으로 stdin 또는 인자로 텍스트 받아 qrcode 라이브러리로 png 저장.",
     "featured": false,
+    "verifyKind": "data",
     "steps": [
       { "id": "init", "title": "프로젝트 폴더", "description": "작업실.",
         "command": "mkdir -p $HOME/projects/tg-qr",
@@ -345,6 +374,7 @@
     "requires": ["python3"],
     "promptTemplate": "Python 으로 OpenAI Whisper API 또는 로컬 whisper 모델로 mp3/m4a 받아쓰기. 결과는 txt + srt.",
     "featured": false,
+    "verifyKind": "data",
     "steps": [
       { "id": "init", "title": "폴더 + venv", "description": "Python 환경.",
         "command": "mkdir -p $HOME/projects/tg-whisper && cd $HOME/projects/tg-whisper && python3 -m venv .venv",
@@ -368,6 +398,7 @@
     "requires": ["python3"],
     "promptTemplate": "Python 으로 pytesseract 또는 Claude vision API 로 이미지에서 한국어 OCR. 결과 .txt 저장.",
     "featured": false,
+    "verifyKind": "data",
     "steps": [
       { "id": "init", "title": "프로젝트 + venv", "description": "Python 환경.",
         "command": "mkdir -p $HOME/projects/tg-ocr && cd $HOME/projects/tg-ocr && python3 -m venv .venv",
@@ -390,6 +421,9 @@
     "outcome": "손님이 카톡 링크로 들어와서 바로 메뉴 보는 진짜 사이트.",
     "requires": ["node", "git"],
     "promptTemplate": "Vite + React 한 페이지 가게 사이트. 메뉴 카드 grid, 사진 + 가격, 전화 버튼. 색상 {{theme}}.",
+    "verifyKind": "web",
+    "runCommand": "npm run dev",
+    "localUrl": "http://localhost:5173",
     "featured": true,
     "steps": [
       { "id": "init", "title": "Vite 프로젝트", "description": "create-vite.",
@@ -414,6 +448,8 @@
     "requires": ["python3"],
     "promptTemplate": "Python 스크립트로 지정 폴더의 파일을 확장자별 하위 폴더로 이동. 경고: 옮기기 전 dry-run 출력 후 사용자 확인.",
     "featured": false,
+    "verifyKind": "cli",
+    "runCommand": "python organize.py ~/Downloads",
     "steps": [
       { "id": "init", "title": "프로젝트 폴더", "description": "작업실.",
         "command": "mkdir -p $HOME/projects/tg-organize",
@@ -434,6 +470,7 @@
     "requires": ["node"],
     "promptTemplate": "단일 HTML 뽀모도로 타이머. 25/5 사이클, 시작/일시정지/리셋, 전환 시 알림음.",
     "featured": false,
+    "verifyKind": "html",
     "steps": [
       { "id": "init", "title": "프로젝트 폴더", "description": "작업실.",
         "command": "mkdir -p $HOME/projects/tg-pomodoro",

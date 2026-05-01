@@ -15,6 +15,17 @@ export const RecipeCategory = z.enum([
 ]);
 export type RecipeCategory = z.infer<typeof RecipeCategory>;
 
+/** 결과물 검증 방식 — Artifact 화면 분기. */
+export const VerifyKind = z.enum([
+  "html",
+  "bot",
+  "cli",
+  "python",
+  "data",
+  "web",
+]);
+export type VerifyKind = z.infer<typeof VerifyKind>;
+
 export const RecipeStep = z.object({
   id: z.string(),
   title: z.string(),
@@ -40,6 +51,12 @@ export const Recipe = z.object({
   steps: z.array(RecipeStep).min(1),
   /** 추천 표시 (⭐) */
   featured: z.boolean().default(false),
+  /** 결과 검증 방식 — 미지정 시 'html' 가정 */
+  verifyKind: VerifyKind.optional(),
+  /** 결과를 띄울 때 실행할 명령 (예: "npm run dev", "streamlit run app.py") */
+  runCommand: z.string().optional(),
+  /** 결과 띄우기 후 접속할 로컬 주소 (예: "http://localhost:5173") */
+  localUrl: z.string().optional(),
 });
 export type Recipe = z.infer<typeof Recipe>;
 
