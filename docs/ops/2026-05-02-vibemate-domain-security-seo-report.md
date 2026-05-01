@@ -236,7 +236,7 @@ SEO 자산:
 | 작업 | 위치 | 시간 |
 |---|---|---|
 | **Pages custom domain 연결** | dash.cloudflare.com → Workers & Pages → tg-landing → Custom domains → "Set up" → vibemate.kr | 5분 |
-| **Email Routing 설정** | dash.cloudflare.com → vibemate.kr → Email → Email Routing → beta@vibemate.kr → mickeys67@gmail.com | 5분 |
+| **Email Routing 설정** | dash.cloudflare.com → vibemate.kr → Email → Email Routing → admin@vibemate.kr → mickeys67@gmail.com | 5분 |
 
 ### 6.2 터미널 (제가 처리)
 
