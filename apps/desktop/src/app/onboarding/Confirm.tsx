@@ -209,7 +209,13 @@ export function Confirm() {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setAdminWarningOpen(false)}
+                onClick={() => {
+                  // "나중에" — 모달만 닫고 mode 도 idle 로 되돌려 dry-run 부터 다시.
+                  // (이전엔 dry-done 그대로 → "✓ 진짜 실행할게요" 또 누르면 또 모달 = 무한 루프)
+                  setAdminWarningOpen(false);
+                  setMode("idle");
+                  setResults([]);
+                }}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-subtle/20 text-sm text-subtle hover:text-ink"
               >
                 나중에

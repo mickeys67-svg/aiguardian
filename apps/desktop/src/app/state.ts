@@ -107,13 +107,20 @@ export const useApp = create<AppState>((set, get) => ({
     // 첫 레시피 결과물이 활성 run 에 있는데 projectId 가 없으면
     // (artifactPath 가 set 안 됐거나 race 케이스) 여기서라도 projects 에 추가 →
     // Home 의 "방금 끝낸 작품" 에 노출되게 보장.
+    // ⚠ 단, artifactPath 가 빈 문자열이면 좀비 프로젝트 (Home 에서 깨진 카드) → skip.
     const run = get().activeRun;
-    if (run && run.recipeId !== "unknown" && !run.projectId) {
+    if (
+      run &&
+      run.recipeId !== "unknown" &&
+      !run.projectId &&
+      run.artifactPath &&
+      run.artifactPath.length > 0
+    ) {
       try {
         const rec: ProjectRecord = addProject({
           recipeId: run.recipeId,
           recipeTitle: run.label ?? "첫 작품",
-          artifactPath: run.artifactPath ?? "",
+          artifactPath: run.artifactPath,
           label: run.label ?? "내 첫 작품",
         });
         set({ activeRun: { ...run, projectId: rec.id } });
@@ -121,7 +128,12 @@ export const useApp = create<AppState>((set, get) => ({
         console.error("finishOnboarding: addProject 실패", e);
       }
     }
-    localStorage.setItem(STORAGE_KEY, "main");
+    try {
+      localStorage.setItem(STORAGE_KEY, "main");
+    } catch (e) {
+      // QuotaExceededError 등 — 메모리상 mode 만 전환.
+      console.error("finishOnboarding: storage write 실패", e);
+    }
     set({ mode: "main", section: "home" });
   },
   setSection: (section) => set({ section }),

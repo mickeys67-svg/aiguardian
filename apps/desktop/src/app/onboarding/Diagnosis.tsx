@@ -69,6 +69,7 @@ export function Diagnosis() {
   const handleRetry = async () => {
     advancedRef.current = false;
     setStepIdx(0);
+    setStalled(false); // race 방어 — useEffect deps 가 isLoading 만이라 명시 reset.
     await qc.invalidateQueries({ queryKey: ["environment"] });
     await refetch();
   };

@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "TG (Terminal Guardian) desktop app"
+description = "Vibemate — 바이브코딩 입문자 통합 가디언"
 
 [lib]
 name = "tg_desktop_lib"

@@ -68,7 +68,7 @@ app.get("/me", meHandler);
 app.post("/auth/logout", logoutHandler);
 
 app.get("/health", (c) =>
-  c.json({ ok: true, service: "tg-backend", name: "Vibemate Backend", version: "0.2.4" }),
+  c.json({ ok: true, service: "tg-backend", name: "Vibemate Backend", version: "0.2.5" }),
 );
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -206,9 +206,11 @@ app.get("/download/:platform", async (c) => {
   })();
 
   if (!asset) {
-    return c.json(
-      { error: "no matching asset", platform, release: release.tag_name },
-      404,
+    // 자산 누락 시 JSON 직접 노출 대신 랜딩으로 redirect → 사용자 메시지 표시.
+    const webOrigin = (c.env.WEB_ORIGIN || "https://vibemate.kr").trim();
+    return c.redirect(
+      `${webOrigin}/?download_error=missing&platform=${encodeURIComponent(platform)}`,
+      302,
     );
   }
 

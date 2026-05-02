@@ -28,11 +28,20 @@ const PATTERNS: Pattern[] = [
       severity: "warning",
     }),
   },
-  // 파일/명령 not found
+  // 파일/명령 not found — greedy 방지: 단어 단위로만 capture.
   {
-    re: /ENOENT.*'?([^'"]+)'?/i,
+    re: /ENOENT[^']*'([^']+)'/i,
     translate: (m) => ({
       title: `📂 파일/폴더 없음 — '${m[1]}' 를 찾을 수 없어요`,
+      fix: "경로가 정확한지 확인하세요. 또는 'mkdir' 로 폴더부터 만드세요.",
+      severity: "warning",
+    }),
+  },
+  // ENOENT fallback (따옴표 없는 메시지)
+  {
+    re: /ENOENT/i,
+    translate: () => ({
+      title: "📂 파일/폴더를 못 찾았어요",
       fix: "경로가 정확한지 확인하세요. 또는 'mkdir' 로 폴더부터 만드세요.",
       severity: "warning",
     }),
@@ -153,6 +162,60 @@ const PATTERNS: Pattern[] = [
     translate: () => ({
       title: "🛡 Windows / 백신 차단됨",
       fix: "AhnLab/V3, 알약 등 일시 중지 후 재시도. SmartScreen 은 '추가 정보 → 실행'.",
+      severity: "warning",
+    }),
+  },
+  // 한국어 Windows cmd — '명령' 인식 실패
+  {
+    re: /은\(는\) 내부 또는 외부 명령|이\(가\) 아닙니다/,
+    translate: () => ({
+      title: "💻 명령어를 못 찾았어요 (한국어 Windows)",
+      fix: "도구가 깔려있는지, PATH 에 등록됐는지 확인. ⚙️ 설정 → 환경 다시 진단.",
+      severity: "warning",
+    }),
+  },
+  // 한국어 Windows — 파일 못 찾음
+  {
+    re: /지정된 (파일|경로)을\(를\) 찾을 수 없습니다|시스템에서 지정된 (파일|경로)/,
+    translate: () => ({
+      title: "📂 그 파일/폴더를 못 찾았어요",
+      fix: "경로가 정확한지 확인하세요. 또는 'mkdir' 로 폴더부터 만드세요.",
+      severity: "warning",
+    }),
+  },
+  // Windows npm 파일 잠김 (실행 중인 파일 덮어쓰기 시도)
+  {
+    re: /EPERM|EBUSY.*resource busy or locked/i,
+    translate: () => ({
+      title: "🔒 파일 잠김 — 누가 그 파일을 쓰고 있어요",
+      fix: "관련 프로그램 (Node, IDE 등) 종료 후 재시도. 또는 컴퓨터 재시작.",
+      severity: "warning",
+    }),
+  },
+  // Python pip SSL — 회사/학교 네트워크
+  {
+    re: /SSL.*CERTIFICATE_VERIFY_FAILED|ssl.*certificate.*verify/i,
+    translate: () => ({
+      title: "🔐 SSL 인증서 검증 실패",
+      fix: "회사·학교 네트워크에서 자주 발생. 다른 네트워크 (집·핫스팟) 에서 시도하거나, 관리자에게 인증서 신뢰 추가 요청.",
+      severity: "warning",
+    }),
+  },
+  // macOS Xcode CLI 미설치
+  {
+    re: /xcode-select.*error|Command Line Tools.*not installed/i,
+    translate: () => ({
+      title: "🍎 Xcode Command Line Tools 가 안 깔려있어요",
+      fix: "터미널에서 'xcode-select --install' 실행 후 GUI 설치 마법사 진행.",
+      severity: "warning",
+    }),
+  },
+  // tar 압축 풀기 실패 (큰 패키지 다운로드 깨짐 등)
+  {
+    re: /tar:.*Error opening archive|Cannot open.*archive/i,
+    translate: () => ({
+      title: "📦 압축 파일 열기 실패",
+      fix: "다운로드가 도중에 끊겼을 수 있어요. 다시 다운받거나 디스크 공간 확인.",
       severity: "warning",
     }),
   },

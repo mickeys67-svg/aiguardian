@@ -362,7 +362,7 @@
       <header>
         <div class="brand">
           Vibemate
-          <span class="version-pill" id="version">v0.2.4</span>
+          <span class="version-pill" id="version">v0.2.5</span>
         </div>
         <nav>
           <a href="#features">기능</a>
@@ -537,8 +537,9 @@
         document.getElementById("welcome-panel").style.display = "none";
         document.getElementById("nav-logout").style.display = "none";
 
+        const params = new URLSearchParams(location.search);
         // login_required 쿼리 = 다운로드 게이트에서 튕긴 사용자
-        if (new URLSearchParams(location.search).get("login_required")) {
+        if (params.get("login_required")) {
           const cta = document.getElementById("cta-anon");
           // 중복 추가 방지 (재로드 시).
           if (!cta.querySelector(".login-required-note")) {
@@ -546,6 +547,18 @@
             note.className = "login-required-note";
             note.style.cssText = "color:var(--primary-dark);font-size:13px;margin-top:8px";
             note.textContent = "다운로드를 받으려면 먼저 로그인해주세요.";
+            cta.appendChild(note);
+          }
+        }
+        // download_error = 자산 매칭 실패 (예: Linux 빌드 누락 등)
+        if (params.get("download_error") === "missing") {
+          const platform = params.get("platform") || "?";
+          const cta = document.getElementById("cta-anon");
+          if (!cta.querySelector(".download-error-note")) {
+            const note = document.createElement("p");
+            note.className = "download-error-note";
+            note.style.cssText = "color:#dc2626;font-size:13px;margin-top:8px;line-height:1.5";
+            note.innerHTML = `해당 OS (${platform}) 자산을 찾지 못했어요. 잠시 후 다시 시도하거나 <a href="https://github.com/mickeys67-svg/aiguardian/releases/latest" target="_blank" rel="noopener" style="color:#dc2626;text-decoration:underline">GitHub Releases</a> 에서 직접 받으세요.`;
             cta.appendChild(note);
           }
         }
