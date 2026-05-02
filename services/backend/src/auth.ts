@@ -2,6 +2,7 @@
 // 흐름: GET /auth/google → Google 동의 화면 → /auth/google/callback → 세션 쿠키 + redirect.
 
 import type { Context } from "hono";
+import { setCookie, deleteCookie } from "hono/cookie";
 
 export type Env = {
   DB?: D1Database;
@@ -29,7 +30,7 @@ function newUserId(): string {
 
 /** Google 로그인 시작 — 동의 URL 로 302. */
 export async function googleStart(c: Context<{ Bindings: Env }>) {
-  const clientId = c.env.GOOGLE_CLIENT_ID;
+  const clientId = c.env.GOOGLE_CLIENT_ID?.trim();
   if (!clientId) {
     return c.json({ error: "google_client_id_missing" }, 500);
   }
@@ -45,10 +46,13 @@ export async function googleStart(c: Context<{ Bindings: Env }>) {
     access_type: "online",
   });
   // state 는 쿠키로 검증 — CSRF 방어.
-  c.header(
-    "Set-Cookie",
-    `oauth_state=${state}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=600`,
-  );
+  setCookie(c, "oauth_state", state, {
+    path: "/",
+    secure: true,
+    httpOnly: true,
+    sameSite: "Lax",
+    maxAge: 600,
+  });
   return c.redirect(
     `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
   );
@@ -65,8 +69,8 @@ export async function googleCallback(c: Context<{ Bindings: Env }>) {
     return c.json({ error: "invalid_state" }, 400);
   }
 
-  const clientId = c.env.GOOGLE_CLIENT_ID;
-  const clientSecret = c.env.GOOGLE_CLIENT_SECRET;
+  const clientId = c.env.GOOGLE_CLIENT_ID?.trim();
+  const clientSecret = c.env.GOOGLE_CLIENT_SECRET?.trim();
   if (!clientId || !clientSecret) {
     return c.json({ error: "oauth_not_configured" }, 500);
   }
@@ -169,13 +173,19 @@ export async function googleCallback(c: Context<{ Bindings: Env }>) {
     .run();
 
   // 5) 쿠키 + 리다이렉트
-  const webOrigin = c.env.WEB_ORIGIN || "https://vibemate.kr";
-  c.header("Set-Cookie", [
-    `vm_session=${sessionToken}; Path=/; Domain=.vibemate.kr; Secure; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_DAYS * 24 * 60 * 60}`,
-    `oauth_state=; Path=/; Max-Age=0`,
-  ].join(", "));
+  setCookie(c, "vm_session", sessionToken, {
+    path: "/",
+    domain: ".vibemate.kr",
+    secure: true,
+    httpOnly: true,
+    sameSite: "Lax",
+    maxAge: SESSION_TTL_DAYS * 24 * 60 * 60,
+  });
+  deleteCookie(c, "oauth_state", { path: "/" });
 
-  return c.redirect(`${webOrigin}/welcome`);
+  // 랜딩은 단일 페이지 (/welcome 라우트 없음). 루트로 보내고 JS 가 /me 호출해서 환영 패널 노출.
+  const webOrigin = (c.env.WEB_ORIGIN || "https://vibemate.kr").trim();
+  return c.redirect(`${webOrigin}/?logged_in=1`);
 }
 
 /** 현재 세션 정보 — /me 엔드포인트. */
@@ -207,10 +217,13 @@ export async function logoutHandler(c: Context<{ Bindings: Env }>) {
   if (token && c.env.DB) {
     await c.env.DB.prepare("DELETE FROM sessions WHERE token = ?1").bind(token).run();
   }
-  c.header(
-    "Set-Cookie",
-    `vm_session=; Path=/; Domain=.vibemate.kr; Secure; HttpOnly; SameSite=Lax; Max-Age=0`,
-  );
+  deleteCookie(c, "vm_session", {
+    path: "/",
+    domain: ".vibemate.kr",
+    secure: true,
+    httpOnly: true,
+    sameSite: "Lax",
+  });
   return c.json({ ok: true });
 }
 
