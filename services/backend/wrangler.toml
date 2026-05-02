@@ -5,6 +5,10 @@ compatibility_flags = ["nodejs_compat"]
 # routes 가 있어도 workers.dev 서브도메인 유지 (디버깅·대체 진입점).
 workers_dev = true
 
+# Cron — 만료 세션 정리 (매일 자정 KST = 15:00 UTC).
+[triggers]
+crons = ["0 15 * * *"]
+
 # vars 는 deploy-all.ps1 가 wrangler 명령으로 채움 (또는 GitHub Actions secret).
 # GH_TOKEN 은 secret 으로만 (`wrangler secret put GH_TOKEN`).
 [vars]

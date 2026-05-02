@@ -1,6 +1,7 @@
-# TG (Terminal Guardian, 가칭)
+# Vibemate
 
 > 바이브코딩 입문자를 위한 통합 가디언 — 컴퓨터 켠 첫 순간부터 첫 앱 배포까지 끊김 없이 안내.
+> https://vibemate.kr · admin@vibemate.kr
 
 원본 전략 문서: [docs/product/v0.9-original.md](docs/product/v0.9-original.md)
 실행 계획서: `C:\Users\micke\.claude\plans\c-users-micke-downloads-terminal-guardi-fancy-fiddle.md`

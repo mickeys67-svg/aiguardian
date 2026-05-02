@@ -322,4 +322,14 @@ app.post("/admin/purge", async (c) => {
   return c.json({ purged: key });
 });
 
-export default app;
+// Cron — 만료 세션 자동 정리 (매일 자정 KST).
+export default {
+  fetch: app.fetch,
+  async scheduled(_event: ScheduledEvent, env: Bindings, _ctx: ExecutionContext) {
+    if (!env.DB) return;
+    const result = await env.DB.prepare(
+      "DELETE FROM sessions WHERE expires_at < datetime('now')",
+    ).run();
+    console.log(`[cron] expired sessions cleanup: ${result.meta.changes ?? 0} rows`);
+  },
+};
