@@ -49,3 +49,6 @@ pnpm-debug.log*
 .wrangler/
 .dev.vars
 packages/mcp-server/dist/
+
+# Claude Code worktrees
+.claude/worktrees/
