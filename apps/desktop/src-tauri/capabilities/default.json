@@ -10,7 +10,6 @@
     "clipboard-manager:allow-read-text",
     "dialog:allow-message",
     "dialog:allow-confirm",
-    "opener:allow-open-url",
-    "process:allow-restart"
+    "opener:allow-open-url"
   ]
 }
