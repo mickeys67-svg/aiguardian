@@ -421,11 +421,13 @@ export async function resolvePath(path: string): Promise<string> {
 export async function openFolderDirect(folderPath: string): Promise<boolean> {
   if (!isTauri()) return false;
   // 1) 새 Rust 명령 시도.
+  let firstErr: unknown = null;
   try {
     const { invoke } = await import("@tauri-apps/api/core");
     await invoke("open_in_system", { path: folderPath });
     return true;
   } catch (e) {
+    firstErr = e;
     console.warn("[openFolderDirect] open_in_system 실패, shell.open 폴백:", e);
   }
   // 2) 폴백: shell.open. ~ 는 미리 확장.
@@ -434,7 +436,18 @@ export async function openFolderDirect(folderPath: string): Promise<boolean> {
     const { open } = await import("@tauri-apps/plugin-shell");
     await open(abs);
     return true;
-  } catch {
+  } catch (e2) {
+    // 두 시도 모두 실패 — 사용자/디버그용 터미널 로그에 기록.
+    try {
+      const { logTerminal } = await import("./terminalLog");
+      logTerminal({
+        kind: "error",
+        text: `폴더 열기 실패: ${folderPath}`,
+        detail: `1차 invoke open_in_system: ${firstErr instanceof Error ? firstErr.message : String(firstErr)} | 2차 shell.open: ${e2 instanceof Error ? e2.message : String(e2)}`,
+      });
+    } catch {
+      /* terminalLog 자체 실패 — silent */
+    }
     return false;
   }
 }

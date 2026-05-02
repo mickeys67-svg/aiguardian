@@ -582,8 +582,34 @@
           if (el) el.href = `${BACKEND}/download/${k}`;
         }
 
-        // GitHub Releases 페이지를 보편적 fallback 으로 (백엔드 다운 시).
+        // GitHub Releases 페이지 (전체 자산 목록) — 최후의 fallback.
         const RELEASES_URL = "https://github.com/mickeys67-svg/aiguardian/releases/latest";
+        // Tauri Updater 가 사용하는 정적 자산 — rate limit 무관, 항상 최신.
+        // platforms.{key}.url 가 실제 OS별 자산 직링크를 가리킴.
+        const LATEST_JSON_URL = "https://github.com/mickeys67-svg/aiguardian/releases/latest/download/latest.json";
+
+        // OS detected → latest.json 의 platforms 키.
+        const PLATFORM_KEY = {
+          win: "windows-x86_64-nsis",
+          mac: "darwin-aarch64-app",
+          linux: "linux-x86_64-appimage",
+        };
+
+        // /latest 실패 시 latest.json 직접 fetch → OS별 자산 URL 추출.
+        async function fallbackToLatestJson() {
+          try {
+            const r = await fetch(LATEST_JSON_URL, { mode: "cors" });
+            if (!r.ok) return null;
+            const meta = await r.json();
+            versionEl.textContent = `v${meta.version}`;
+            const key = PLATFORM_KEY[detected];
+            const url = meta.platforms?.[key]?.url;
+            return url ? { version: meta.version, url } : null;
+          } catch (_) {
+            return null;
+          }
+        }
+
         try {
           const res = await fetch(`${BACKEND}/latest`);
           if (res.ok) {
@@ -598,16 +624,30 @@
               primaryLabel.textContent = "GitHub Releases 에서 다운로드";
             }
           } else {
-            // 503 등 서버 응답 — GitHub Releases 페이지로 fallback.
-            primaryLabel.textContent = "GitHub Releases 에서 다운로드";
-            primaryMeta.textContent = "백엔드 점검 중 — 직접 다운로드";
-            primary.href = RELEASES_URL;
+            // 백엔드 503 → latest.json 으로 직접 fallback (사용자에게 OS 별 직링크 제공).
+            const fb = await fallbackToLatestJson();
+            if (fb && detected) {
+              primary.href = fb.url;
+              primaryLabel.textContent = platformLabel(detected);
+              primaryMeta.textContent = `최신 v${fb.version} · 직접 다운로드`;
+            } else {
+              primaryLabel.textContent = "GitHub Releases 에서 다운로드";
+              primaryMeta.textContent = "백엔드 점검 중 — 직접 다운로드";
+              primary.href = RELEASES_URL;
+            }
           }
         } catch (e) {
-          // 네트워크 / CORS 실패 — GitHub Releases 직링크 fallback.
-          primaryLabel.textContent = "GitHub Releases 에서 다운로드";
-          primaryMeta.textContent = "백엔드 연결 실패 — 직접 다운로드";
-          primary.href = RELEASES_URL;
+          // 네트워크 / CORS 실패 — latest.json 시도 후 페이지 fallback.
+          const fb = await fallbackToLatestJson();
+          if (fb && detected) {
+            primary.href = fb.url;
+            primaryLabel.textContent = platformLabel(detected);
+            primaryMeta.textContent = `최신 v${fb.version} · 직접 다운로드`;
+          } else {
+            primaryLabel.textContent = "GitHub Releases 에서 다운로드";
+            primaryMeta.textContent = "백엔드 연결 실패 — 직접 다운로드";
+            primary.href = RELEASES_URL;
+          }
         }
       }
 

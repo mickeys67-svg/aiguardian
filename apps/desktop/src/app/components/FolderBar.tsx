@@ -66,10 +66,12 @@ export function FolderBar({ pathOrFolder, isFilePath = true, hint }: Props) {
     }
     const ok = await openFolderDirect(absFolder);
     if (!ok) {
+      // 사용자에게 친절한 메시지 — 수동 안내 모달로 안내.
       notify(
-        "폴더 열기가 막혔어요. Rust 가 아직 새 명령을 모를 수 있어요 — 'pnpm tauri dev' 를 한 번 재시작해주세요.",
+        "폴더가 안 열렸어요. 직접 여는 방법을 알려드릴게요.",
         "위로형",
       );
+      setManualKind("folder");
     }
   };
 
@@ -81,9 +83,10 @@ export function FolderBar({ pathOrFolder, isFilePath = true, hint }: Props) {
     const ok = await openTerminalIn(absFolder);
     if (!ok) {
       notify(
-        "터미널 열기 실패 — Rust 새 명령 미등록일 수 있어요. 'pnpm tauri dev' 재시작 후 다시.",
+        "터미널이 안 열렸어요. 직접 여는 방법을 알려드릴게요.",
         "위로형",
       );
+      setManualKind("terminal");
     } else notify("✓ PowerShell 새 창이 열렸어요.");
   };
 
@@ -95,9 +98,10 @@ export function FolderBar({ pathOrFolder, isFilePath = true, hint }: Props) {
     const ok = await openTerminalIn(absFolder, "claude");
     if (!ok) {
       notify(
-        "Claude Code 시작 실패 — 'claude' 명령이 PATH 에 있는지, Rust 가 새로 빌드됐는지 확인해주세요.",
+        "Claude Code 가 시작 안 됐어요. 'claude' 명령이 깔려있는지 확인해주세요. ⚙️ 설정 → 환경 다시 진단으로 점검할 수 있어요.",
         "위로형",
       );
+      setManualKind("claude");
     } else notify("✓ PowerShell 에서 Claude Code 시작 — 곧 입력창이 뜰 거예요.");
   };
 
@@ -303,7 +307,7 @@ function ManualGuideModal({
           )}
 
           <div className="mt-5 pt-3 border-t border-subtle/10 text-[11px] text-subtle">
-            💡 <strong>데스크톱 앱</strong> (<code className="font-mono bg-bg px-1 rounded">pnpm tauri dev</code>) 을 띄우면 이 버튼 한 번으로 자동 실행돼요.
+            💡 위 단계는 <strong>Vibemate 데스크톱 앱</strong>에서 한 번의 클릭으로 자동 실행돼요. 안 되시면 ⚙️ 설정 → 환경 다시 진단을 눌러보세요.
           </div>
         </motion.div>
       </motion.div>
