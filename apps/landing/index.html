@@ -259,47 +259,130 @@
         color: var(--subtle);
         margin-left: 6px;
       }
+      .welcome-panel {
+        max-width: 560px;
+        margin: 0 auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px;
+        text-align: left;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      }
+      .welcome-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .welcome-header img {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--bg);
+      }
+      .welcome-greeting {
+        margin: 0 0 4px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .welcome-meta {
+        margin: 0 0 4px;
+        font-size: 13px;
+        color: var(--subtle);
+      }
+      .welcome-counter {
+        margin: 0;
+        font-size: 13px;
+        color: var(--primary-dark);
+      }
+      .welcome-counter strong {
+        font-size: 15px;
+      }
+      #btn-google {
+        background: white;
+        color: var(--ink);
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+      #btn-google:hover {
+        background: #f8f8f8;
+        transform: translateY(-1px);
+      }
+      #btn-google .cta-icon {
+        background: linear-gradient(45deg, #4285f4 0%, #34a853 25%, #fbbc04 50%, #ea4335 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        font-weight: 900;
+        font-size: 22px;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <header>
         <div class="brand">
-          TG
-          <span class="version-pill" id="version">v0.1</span>
+          Vibemate
+          <span class="version-pill" id="version">v0.2.1</span>
         </div>
         <nav>
           <a href="#features">기능</a>
           <a href="#flow">10단계</a>
-          <a href="#download">다운로드</a>
+          <a href="#download">시작</a>
+          <a href="#" id="nav-logout" style="display:none">로그아웃</a>
         </nav>
       </header>
 
       <section class="hero" id="download">
-        <span class="badge">v0.1 베타 모집 중</span>
         <h1>컴맹도 30분이면<br />첫 앱 띄워요.</h1>
         <p>
           AI로 앱을 만들 수 있다는 말은 들었지만 어디서부터 시작해야 할지 모르는
           분들을 위한 데스크톱 가디언.
         </p>
 
-        <div class="download">
-          <a class="cta" id="primary-download" href="#" rel="noopener">
-            <span class="cta-icon">⬇</span>
-            <span id="primary-label">다운로드 준비 중...</span>
-          </a>
-          <span class="cta-meta" id="primary-meta">
-            OS 자동 감지 · 무료 · 비밀번호 한 번만 물어봐요
+        <!-- 비로그인 상태 — Google 로 시작 -->
+        <div class="download" id="cta-anon">
+          <button class="cta" id="btn-google" type="button">
+            <span class="cta-icon">G</span>
+            <span>Google 로 시작</span>
+          </button>
+          <span class="cta-meta">
+            이메일만 받아요 · 비밀번호 입력 X · 무료
           </span>
         </div>
 
-        <div class="alt-downloads">
-          <span>다른 OS:</span>
-          <a id="dl-win" href="#">Windows</a>·
-          <a id="dl-mac" href="#">Mac (Intel/M1)</a>·
-          <a id="dl-mac-arm" href="#">Mac M1/M2</a>·
-          <a id="dl-mac-intel" href="#">Mac Intel</a>·
-          <a id="dl-linux" href="#">Linux</a>
+        <!-- 로그인 후 — 환영 + 다운로드 -->
+        <div class="welcome-panel" id="welcome-panel" style="display:none">
+          <div class="welcome-header">
+            <img id="welcome-avatar" alt="" />
+            <div>
+              <p class="welcome-greeting"><span id="welcome-name">친구</span> 님, 환영해요 👋</p>
+              <p class="welcome-meta"><span id="welcome-email"></span></p>
+              <p class="welcome-counter">당신은 <strong id="member-number">?</strong>번째 회원이에요 (총 <span id="total-members">?</span>명)</p>
+            </div>
+          </div>
+
+          <div class="download">
+            <a class="cta" id="primary-download" href="#" rel="noopener">
+              <span class="cta-icon">⬇</span>
+              <span id="primary-label">다운로드 준비 중...</span>
+            </a>
+            <span class="cta-meta" id="primary-meta">
+              OS 자동 감지 · 무료 · 비밀번호 한 번만 물어봐요
+            </span>
+          </div>
+
+          <div class="alt-downloads">
+            <span>다른 OS:</span>
+            <a id="dl-win" href="#">Windows</a>·
+            <a id="dl-mac" href="#">Mac (Universal)</a>·
+            <a id="dl-mac-arm" href="#">Mac M1/M2</a>·
+            <a id="dl-mac-intel" href="#">Mac Intel</a>·
+            <a id="dl-linux" href="#">Linux</a>
+          </div>
         </div>
       </section>
 
@@ -351,54 +434,76 @@
 
       <footer>
         <p>
-          베타 메일링: <a href="mailto:admin@vibemate.kr">admin@vibemate.kr</a>
+          문의: <a href="mailto:admin@vibemate.kr">admin@vibemate.kr</a>
         </p>
-        <p>© 2026 TG Project · 가코드명, 정식 브랜드 Week 4~5 확정</p>
+        <p>© 2026 Vibemate</p>
       </footer>
     </div>
 
     <script>
-      // 환경설정 — Cloudflare Pages 배포 시 BACKEND_URL 을 환경변수 또는 빌드 치환.
-      // 기본값은 production 도메인. 로컬 dev 시엔 localStorage 로 override 가능.
-      const DEFAULT_BACKEND = "https://tg-backend.mickeys67.workers.dev";
+      // 백엔드 — 운영 도메인 (CORS credentials 필요해서 같은 zone 의 api 사용).
+      const DEFAULT_BACKEND = "https://api.vibemate.kr";
       const BACKEND =
-        localStorage.getItem("tg.backend.override") || DEFAULT_BACKEND;
+        localStorage.getItem("vm.backend.override") || DEFAULT_BACKEND;
 
       function detectPlatform() {
         const ua = navigator.userAgent.toLowerCase();
         const platform = (navigator.platform || "").toLowerCase();
         if (ua.includes("win") || platform.includes("win")) return "win";
-        if (ua.includes("mac") || platform.includes("mac")) {
-          // Apple Silicon 추정: navigator.userAgentData (Chromium) 또는
-          // userAgent의 'Intel Mac OS X' 부재로 판별.
-          // 100% 정확하지 않으니 universal 빌드를 우선 제공.
-          return "mac";
-        }
+        if (ua.includes("mac") || platform.includes("mac")) return "mac";
         if (ua.includes("linux") || platform.includes("linux")) return "linux";
         return null;
       }
 
       function platformLabel(p) {
         switch (p) {
-          case "win":
-            return "Windows용 다운로드 (.exe)";
-          case "mac":
-            return "Mac용 다운로드 (.dmg)";
-          case "linux":
-            return "Linux용 다운로드 (.AppImage)";
-          default:
-            return "다운로드";
+          case "win": return "Windows용 다운로드 (.msi)";
+          case "mac": return "Mac용 다운로드 (.dmg)";
+          case "linux": return "Linux용 다운로드 (.AppImage)";
+          default: return "다운로드";
         }
       }
 
-      async function init() {
+      function showLoggedIn(me) {
+        document.getElementById("cta-anon").style.display = "none";
+        document.getElementById("welcome-panel").style.display = "block";
+        document.getElementById("nav-logout").style.display = "inline";
+
+        document.getElementById("welcome-name").textContent = me.user.name || me.user.email.split("@")[0];
+        document.getElementById("welcome-email").textContent = me.user.email;
+        document.getElementById("member-number").textContent = me.user.memberNumber;
+        document.getElementById("total-members").textContent = me.totalMembers;
+
+        const avatar = document.getElementById("welcome-avatar");
+        if (me.user.picture) {
+          avatar.src = me.user.picture;
+        } else {
+          avatar.style.display = "none";
+        }
+      }
+
+      function showAnonymous() {
+        document.getElementById("cta-anon").style.display = "inline-flex";
+        document.getElementById("welcome-panel").style.display = "none";
+        document.getElementById("nav-logout").style.display = "none";
+
+        // login_required 쿼리 = 다운로드 게이트에서 튕긴 사용자
+        if (new URLSearchParams(location.search).get("login_required")) {
+          const cta = document.getElementById("cta-anon");
+          const note = document.createElement("p");
+          note.style.cssText = "color:var(--primary-dark);font-size:13px;margin-top:8px";
+          note.textContent = "다운로드를 받으려면 먼저 로그인해주세요.";
+          cta.appendChild(note);
+        }
+      }
+
+      async function wireDownloads() {
         const detected = detectPlatform();
         const primary = document.getElementById("primary-download");
         const primaryLabel = document.getElementById("primary-label");
         const primaryMeta = document.getElementById("primary-meta");
         const versionEl = document.getElementById("version");
 
-        // 모든 다운로드 링크 wiring
         const links = {
           win: document.getElementById("dl-win"),
           mac: document.getElementById("dl-mac"),
@@ -407,35 +512,58 @@
           linux: document.getElementById("dl-linux"),
         };
         for (const [k, el] of Object.entries(links)) {
-          el.href = `${BACKEND}/download/${k}`;
+          if (el) el.href = `${BACKEND}/download/${k}`;
         }
 
-        // 메타 가져오기 (실패해도 GitHub Releases 전체 페이지로 fallback)
         try {
-          const res = await fetch(`${BACKEND}/latest`, { mode: "cors" });
+          const res = await fetch(`${BACKEND}/latest`);
           if (res.ok) {
             const meta = await res.json();
             versionEl.textContent = `v${meta.version}`;
             primaryMeta.textContent = `최신 v${meta.version} · ${meta.assets.length}개 자산 · 무료`;
+            if (detected) {
+              primary.href = `${BACKEND}/download/${detected}`;
+              primaryLabel.textContent = platformLabel(detected);
+            } else {
+              primaryLabel.textContent = "다운로드";
+            }
           } else {
-            // 503 = release 없음. 베타 시작 전.
-            primaryLabel.textContent = "곧 다운로드 가능 — 베타 메일링 신청";
-            primary.href = "mailto:admin@vibemate.kr";
-            return;
+            primaryLabel.textContent = "곧 다운로드 가능";
+            primaryMeta.textContent = "릴리스 빌드 진행 중";
           }
         } catch (e) {
-          // 백엔드 연결 안 됨. 메일링으로 fallback.
-          primaryLabel.textContent = "곧 다운로드 가능 — 베타 메일링 신청";
-          primary.href = "mailto:admin@vibemate.kr";
-          return;
+          primaryLabel.textContent = "다운로드";
+          primary.href = "#";
+        }
+      }
+
+      async function init() {
+        // Google 로그인 버튼 — 백엔드 OAuth 시작.
+        document.getElementById("btn-google").addEventListener("click", () => {
+          location.href = `${BACKEND}/auth/google`;
+        });
+
+        // 로그아웃.
+        document.getElementById("nav-logout").addEventListener("click", async (e) => {
+          e.preventDefault();
+          await fetch(`${BACKEND}/auth/logout`, { method: "POST", credentials: "include" });
+          location.reload();
+        });
+
+        // 세션 확인.
+        let me = null;
+        try {
+          const res = await fetch(`${BACKEND}/me`, { credentials: "include" });
+          if (res.ok) me = await res.json();
+        } catch (e) {
+          // 백엔드 다운 또는 CORS — 비로그인 처리.
         }
 
-        if (detected) {
-          primary.href = `${BACKEND}/download/${detected}`;
-          primaryLabel.textContent = platformLabel(detected);
+        if (me && me.authenticated) {
+          showLoggedIn(me);
+          await wireDownloads();
         } else {
-          primaryLabel.textContent = "다운로드";
-          primary.href = "#download";
+          showAnonymous();
         }
       }
 

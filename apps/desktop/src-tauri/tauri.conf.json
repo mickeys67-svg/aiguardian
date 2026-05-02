@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "TG",
-  "version": "0.1.0",
-  "identifier": "kr.tg.desktop",
+  "productName": "Vibemate",
+  "version": "0.2.1",
+  "identifier": "kr.vibemate.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",

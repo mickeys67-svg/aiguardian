@@ -6,6 +6,13 @@ import {
   getLatestRelease,
   pickAsset,
 } from "./github.js";
+import {
+  googleStart,
+  googleCallback,
+  meHandler,
+  logoutHandler,
+  loadSession,
+} from "./auth.js";
 
 type Bindings = {
   DB?: D1Database;
@@ -14,6 +21,9 @@ type Bindings = {
   GH_REPO?: string;
   GH_TOKEN?: string;
   PURGE_TOKEN?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  WEB_ORIGIN?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -28,7 +38,7 @@ app.use("*", async (c, next) => {
   c.header("Permissions-Policy", "interest-cohort=()");
 });
 
-// CORS — 운영 도메인 화이트리스트. 데스크톱 앱은 tauri:// origin 또는 localhost.
+// CORS — 운영 도메인 화이트리스트. credentials 허용 (세션 쿠키).
 const ALLOWED_ORIGINS = [
   "https://vibemate.kr",
   "https://www.vibemate.kr",
@@ -43,8 +53,18 @@ app.use(
   cors({
     origin: (origin) => (ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]),
     allowHeaders: ["content-type"],
+    credentials: true,
   }),
 );
+
+// ────────────────────────────────────────────────────────────────────────────
+// 인증 — Google OAuth + 세션
+// ────────────────────────────────────────────────────────────────────────────
+
+app.get("/auth/google", googleStart);
+app.get("/auth/google/callback", googleCallback);
+app.get("/me", meHandler);
+app.post("/auth/logout", logoutHandler);
 
 app.get("/health", (c) =>
   c.json({ ok: true, service: "tg-backend", version: "0.1.0" }),
@@ -143,11 +163,18 @@ app.get("/latest", async (c) => {
 });
 
 /**
- * 사용자 OS별 다운로드 진입점.
+ * 사용자 OS별 다운로드 진입점 — 로그인 필수 (정식 서비스).
  *   /download/win, /download/mac, /download/mac-arm, /download/mac-intel, /download/linux
- * GitHub Releases 자산 URL로 302 redirect.
+ * 인증 후 GitHub Releases 자산 URL로 302 redirect + downloads 로그.
  */
 app.get("/download/:platform", async (c) => {
+  // 인증 게이트 — 로그인 안 했으면 로그인 화면으로.
+  const session = await loadSession(c);
+  if (!session) {
+    const webOrigin = c.env.WEB_ORIGIN || "https://vibemate.kr";
+    return c.redirect(`${webOrigin}/?login_required=1`, 302);
+  }
+
   const platform = c.req.param("platform");
   const release = await getLatestRelease(c.env);
   if (!release) {
@@ -180,6 +207,24 @@ app.get("/download/:platform", async (c) => {
       404,
     );
   }
+
+  // 다운로드 로그 + 카운터.
+  if (c.env.DB) {
+    await c.env.DB.batch([
+      c.env.DB.prepare(
+        "INSERT INTO downloads (user_id, platform, version, user_agent) VALUES (?1, ?2, ?3, ?4)",
+      ).bind(
+        session.user_id,
+        platform,
+        release.tag_name,
+        c.req.header("user-agent") ?? null,
+      ),
+      c.env.DB.prepare(
+        "UPDATE users SET download_count = download_count + 1 WHERE id = ?1",
+      ).bind(session.user_id),
+    ]);
+  }
+
   return c.redirect(asset.browser_download_url, 302);
 });
 

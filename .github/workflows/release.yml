@@ -70,17 +70,18 @@ jobs:
         with:
           projectPath: apps/desktop
           tagName: ${{ github.event.inputs.version || github.ref_name }}
-          releaseName: "TG ${{ github.event.inputs.version || github.ref_name }}"
+          releaseName: "Vibemate ${{ github.event.inputs.version || github.ref_name }}"
           releaseBody: |
-            ## TG ${{ github.event.inputs.version || github.ref_name }}
+            ## Vibemate ${{ github.event.inputs.version || github.ref_name }}
 
-            **다운로드**: 백엔드 `/download/{win,mac,linux}` 또는 아래 자산 직접 다운로드.
+            **다운로드**: https://vibemate.kr (Google 로그인 → OS 자동 감지)
+            또는 아래 자산 직접 다운로드.
 
-            **베타 안내**: Win MSI는 SmartScreen 경고가 뜰 수 있음(EV Cert 미발급). "추가 정보 → 실행" 클릭. Mac dmg는 unsigned이므로 우클릭 → 열기.
-
-            자세한 내용: https://vibemate.kr
+            **설치 안내**:
+            - **Windows**: SmartScreen 경고 시 "추가 정보 → 실행" 클릭 (코드 사이닝 인증서 적용 전).
+            - **macOS**: 우클릭 → 열기 (Apple Notarization 적용 전).
           releaseDraft: false
-          prerelease: true
+          prerelease: false
           args: ${{ matrix.args }}
 
   notify-backend:
