@@ -223,7 +223,7 @@ export function generateSessionMd(args: {
     })
     .join("\n") || "(아직 없음)";
 
-  return `# 🤖 TG 작업 컨텍스트 — 새 Claude 세션에서 이어가기
+  return `# 🤖 Vibemate 작업 컨텍스트 — 새 Claude 세션에서 이어가기
 
 > 이 문서는 가디언이 자동 생성. **새 Claude Code(또는 Claude.ai) 세션에 첫 메시지로 통째 붙여넣으세요.** 이전 흐름을 바로 이어갈 수 있습니다.
 

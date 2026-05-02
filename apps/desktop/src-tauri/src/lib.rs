@@ -58,5 +58,5 @@ pub fn run() {
             aibridge::list_artifact_files,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running TG");
+        .expect("error while running Vibemate");
 }

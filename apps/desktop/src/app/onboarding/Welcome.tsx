@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useOnboarding } from "../state";
 import { isOptedIn, setOptedIn } from "@/lib/telemetry";
+import { APP_VERSION, APP_TAGLINE } from "@/lib/version";
 import { AutoTerm } from "../components/AutoTerm";
 
 export function Welcome() {
@@ -52,7 +53,7 @@ export function Welcome() {
       >
         시작
       </button>
-      <p className="mt-6 text-xs text-subtle">v0.1 · 입문자용 가디언</p>
+      <p className="mt-6 text-xs text-subtle">v{APP_VERSION} · {APP_TAGLINE}</p>
     </motion.section>
   );
 }

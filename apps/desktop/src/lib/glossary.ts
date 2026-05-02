@@ -26,38 +26,38 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   "Claude Code": {
     short: "AI 코딩 도우미 (터미널 안에서)",
     what: "터미널 안에서 동작하는 AI 도우미예요. '이거 만들어줘' 라고 말하면 코드를 써줘요.",
-    why: "TG가 깔아준 빈 프로젝트에 실제 코드를 채워주는 역할이에요.",
+    why: "Vibemate가 깔아준 빈 프로젝트에 실제 코드를 채워주는 역할이에요.",
     safe: "Anthropic 공식 도구. 당신 허락 없이 파일을 바꾸지 않아요.",
   },
   MCP: {
     short: "AI ↔ 컴퓨터를 잇는 다리",
     what: "AI가 당신 컴퓨터의 도구·파일에 안전하게 접근할 수 있게 해주는 표준 규약이에요.",
-    why: "TG가 AI한테 '이 사용자 환경에선 이 명령이 안전해' 라고 알려줄 수 있어요.",
+    why: "Vibemate가 AI한테 '이 사용자 환경에선 이 명령이 안전해' 라고 알려줄 수 있어요.",
     safe: "당신이 켜야 동작하고, 어떤 권한을 줄지 직접 정해요.",
   },
   "dry-run": {
     short: "실제로 하기 전에 미리 시늉",
     what: "명령어를 진짜 실행하지 않고, 실행했다면 어떻게 됐을지 미리 보는 안전 검사예요.",
-    why: "위험한 명령을 사전에 잡아낼 수 있어요. TG 모든 레시피는 dry-run 부터 해요.",
+    why: "위험한 명령을 사전에 잡아낼 수 있어요. Vibemate 모든 레시피는 dry-run 부터 해요.",
     safe: "100% 안전. 이 단계에서는 어떤 변화도 일어나지 않아요.",
   },
   터미널: {
     short: "컴퓨터에 글자로 명령하는 까만 창",
     what: "버튼·아이콘 대신 글자로 컴퓨터한테 부탁하는 창이에요.",
     why: "개발자들이 빠르게 작업하려고 쓰는 방식이에요. AI 코딩 도구도 여기서 동작해요.",
-    safe: "글자만 입력해요. 모르는 명령은 TG가 대신 입력해줘요.",
+    safe: "글자만 입력해요. 모르는 명령은 Vibemate가 대신 입력해줘요.",
   },
   폴더: {
     short: "파일들을 모아두는 곳",
     what: "당신 컴퓨터 안의 한 칸. 파일탐색기에서 보이는 그 폴더와 같은 거예요.",
     why: "프로젝트마다 폴더 하나 — 정리되고 안 섞여요.",
-    safe: "TG는 '내 문서 / projects' 안에서만 새 폴더를 만들어요.",
+    safe: "Vibemate는 '내 문서 / projects' 안에서만 새 폴더를 만들어요.",
   },
   의존성: {
     short: "이 프로젝트가 같이 필요한 도구들",
     what: "당신이 만들 앱이 동작하려면 같이 깔려야 하는 작은 도구 묶음이에요.",
     why: "예: 웹페이지 만들 때 React 라는 도구가 같이 깔려야 React 코드가 돌아가요.",
-    safe: "공식 저장소(npm)에서 받아요. TG가 사전에 안전 검사해요.",
+    safe: "공식 저장소(npm)에서 받아요. Vibemate가 사전에 안전 검사해요.",
   },
   npm: {
     short: "Node 도구를 깔고 관리하는 프로그램",
@@ -128,7 +128,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   winget: {
     short: "Windows 의 앱 설치 명령",
     what: "Windows 10 후기·11 에 기본 깔린 앱스토어 비슷한 명령. 한 줄로 프로그램 설치 가능.",
-    why: "TG 의 '한 번 클릭으로 깔기' 버튼이 winget 으로 Claude Code 를 설치 시도해요.",
+    why: "Vibemate 의 '한 번 클릭으로 깔기' 버튼이 winget 으로 Claude Code 를 설치 시도해요.",
     safe: "Microsoft 정품. 공식 앱만 받아옵니다.",
   },
   "관리자 권한": {
@@ -139,7 +139,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   },
   iframe: {
     short: "페이지 안 페이지 — 미리보기 창",
-    what: "다른 HTML 을 한 페이지 안에 끼워 넣는 박스. TG 가 만든 결과를 미리 보여줄 때 써요.",
+    what: "다른 HTML 을 한 페이지 안에 끼워 넣는 박스. Vibemate 가 만든 결과를 미리 보여줄 때 써요.",
     why: "앱을 안 닫고도 결과를 바로 볼 수 있어요.",
     safe: "안전. 별도 격리 환경에서 렌더됩니다.",
   },
@@ -152,7 +152,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   QR: {
     short: "스마트폰 카메라로 찍는 사각형 코드",
     what: "주소·문자를 사각형 점 패턴으로 만든 거. 폰 카메라로 비추면 자동 인식.",
-    why: "TG 가 만든 임시 주소를 폰에 빠르게 옮길 때 써요.",
+    why: "Vibemate 가 만든 임시 주소를 폰에 빠르게 옮길 때 써요.",
     safe: "코드 자체는 그냥 그림이에요. 인식하면 그 주소로 갑니다.",
   },
   Streamlit: {
@@ -200,7 +200,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   Cloudflare: {
     short: "전 세계 무료 CDN·서버리스 플랫폼",
     what: "Workers/Pages 무료 티어가 풍부. URL 단축기·정적 사이트·작은 백엔드 호스팅.",
-    why: "TG 의 일부 레시피(URL 단축기 등)는 Cloudflare Workers 사용.",
+    why: "Vibemate 의 일부 레시피(URL 단축기 등)는 Cloudflare Workers 사용.",
     safe: "공식. 무료 한도 충분. 카드 등록 없이 시작 가능.",
   },
   GitHub: {
@@ -212,7 +212,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   MSI: {
     short: "Windows 설치 파일 형식 (.msi)",
     what: "더블클릭하면 자동으로 깔리는 Windows 표준 설치 파일.",
-    why: "TG 데스크톱 앱의 정식 배포는 .msi 형태로 제공.",
+    why: "Vibemate 데스크톱 앱의 정식 배포는 .msi 형태로 제공.",
     safe: "Windows 가 자동 검증. 출처가 확실하면 안전.",
   },
   EXE: {

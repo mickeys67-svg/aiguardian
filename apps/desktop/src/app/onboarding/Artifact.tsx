@@ -200,7 +200,7 @@ export function Artifact() {
         onClick={finishOnboarding}
         className="w-full px-6 py-3 rounded-xl bg-success text-white font-medium hover:opacity-90"
       >
-        TG 메인으로 →
+        Vibemate 메인으로 →
       </button>
 
       <FullscreenPreview

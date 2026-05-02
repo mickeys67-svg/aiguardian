@@ -1,4 +1,4 @@
-// [7] AI 다리 — TG 가 만든 빈 프로젝트 → Claude Code → 코드 받기 → 파일 저장.
+// [7] AI 다리 — Vibemate 가 만든 빈 프로젝트 → Claude Code → 코드 받기 → 파일 저장.
 // 입문자에게 가장 어려운 1마일을 3단계로 쪼갠 화면.
 
 import { motion, AnimatePresence } from "framer-motion";

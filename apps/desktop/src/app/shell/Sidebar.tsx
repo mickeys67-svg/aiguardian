@@ -1,4 +1,5 @@
 import { useApp, type MainSection } from "../state";
+import { APP_NAME, APP_VERSION, APP_TAGLINE } from "@/lib/version";
 
 const ITEMS: Array<{ id: MainSection; label: string; icon: string }> = [
   { id: "home", label: "홈", icon: "🏠" },
@@ -15,8 +16,8 @@ export function Sidebar() {
   return (
     <aside className="w-56 shrink-0 border-r border-subtle/15 bg-surface flex flex-col">
       <div className="px-5 py-4 border-b border-subtle/10">
-        <p className="font-bold text-ink text-lg">가디언</p>
-        <p className="text-[11px] text-subtle">v0.1 · 입문자 코딩 가디언</p>
+        <p className="font-bold text-ink text-lg">{APP_NAME}</p>
+        <p className="text-[11px] text-subtle">v{APP_VERSION} · {APP_TAGLINE}</p>
       </div>
       <nav className="flex-1 py-3">
         {ITEMS.map((item) => (

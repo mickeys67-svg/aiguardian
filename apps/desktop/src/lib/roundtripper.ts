@@ -20,7 +20,7 @@ export interface ErrorContext {
  */
 export function formatErrorForAi(ctx: ErrorContext): string {
   const lines = [
-    "안녕하세요. TG (Terminal Guardian) 사용자예요. 코드를 실행하다 에러를 만났어요. 한국어로 원인과 해결책을 알려주실 수 있나요?",
+    "안녕하세요. Vibemate 사용자예요. 코드를 실행하다 에러를 만났어요. 한국어로 원인과 해결책을 알려주실 수 있나요?",
     "",
     "## 실행한 명령",
     "```",
