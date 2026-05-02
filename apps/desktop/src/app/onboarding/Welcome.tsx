@@ -30,8 +30,12 @@ export function Welcome() {
       <p className="text-ink mb-3">
         컴퓨터로 처음 뭔가를 만들어보려는 분이군요.
       </p>
-      <p className="text-subtle mb-6 text-sm">
+      <p className="text-subtle mb-2 text-sm">
         제가 30분 동안 옆에서 같이 갈게요. 부족한 건 다 깔아드릴게요.
+      </p>
+      <p className="text-subtle mb-6 text-xs leading-relaxed max-w-md mx-auto">
+        <span className="font-medium">바이브코딩</span> 이란 자연어로 AI 한테 부탁해서 코드를 받는 방식이에요.
+        Vibemate 가 환경 진단 → 도구 자동 설치 → AI 연결 → 첫 결과물까지 안내해드려요.
       </p>
 
       <label className="flex items-center justify-center gap-2 mb-6 text-xs text-subtle cursor-pointer">

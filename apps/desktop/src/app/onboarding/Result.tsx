@@ -267,12 +267,13 @@ function ToolCard({
           </p>
         </div>
         <span
-          aria-label={tool.installed ? "설치됨" : "미설치"}
+          aria-label={tool.installed ? "설치됨" : "곧 설치 가능"}
           className={`text-xl leading-none ${
-            tool.installed ? "text-success" : "text-warning"
+            tool.installed ? "text-success" : "text-primary"
           }`}
+          title={tool.installed ? "이미 설치됨" : "이걸 깔아드릴게요"}
         >
-          {tool.installed ? "✅" : "⚠️"}
+          {tool.installed ? "✅" : "➕"}
         </span>
       </div>
       {tool.version && (

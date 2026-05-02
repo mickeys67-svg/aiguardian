@@ -60,11 +60,12 @@ export async function getLatestRelease(env: {
   return release;
 }
 
-/** 플랫폼/아키별 자산 매칭 — Tauri 기본 산출물 명명 규칙. */
+/** 플랫폼/아키/포맷별 자산 매칭 — Tauri 기본 산출물 명명 규칙. */
 export function pickAsset(
   release: GhRelease,
   target: "windows" | "macos" | "linux",
   arch?: "x64" | "aarch64" | "universal",
+  format?: "exe" | "msi",
 ): GhAsset | null {
   const lower = release.assets.map((a) => ({
     asset: a,
@@ -72,28 +73,39 @@ export function pickAsset(
   }));
 
   if (target === "windows") {
+    // format=msi 강제 (AhnLab/V3 안티바이러스 차단 우회용 fallback URL).
+    if (format === "msi") {
+      return (
+        lower.find(({ name }) => name.endsWith(".msi") && !name.endsWith(".msi.zip"))
+          ?.asset ?? null
+      );
+    }
+    // 기본은 NSIS .exe → MSI fallback.
     return (
       lower.find(({ name }) => name.endsWith("-setup.exe"))?.asset ??
-      lower.find(({ name }) => name.endsWith(".msi"))?.asset ??
+      lower.find(({ name }) => name.endsWith(".msi") && !name.endsWith(".msi.zip"))?.asset ??
       null
     );
   }
   if (target === "macos") {
+    // arch 명시 → arch 매칭 → universal fallback → 아무 dmg fallback.
     if (arch === "aarch64") {
       return (
-        lower.find(({ name }) => name.includes("aarch64") && name.endsWith(".dmg"))
-          ?.asset ?? null
+        lower.find(({ name }) => name.includes("aarch64") && name.endsWith(".dmg"))?.asset ??
+        lower.find(({ name }) => name.includes("universal") && name.endsWith(".dmg"))?.asset ??
+        null
       );
     }
     if (arch === "x64") {
       return (
-        lower.find(({ name }) => name.includes("x64") && name.endsWith(".dmg"))
-          ?.asset ?? null
+        lower.find(({ name }) => name.includes("x64") && name.endsWith(".dmg"))?.asset ??
+        lower.find(({ name }) => name.includes("universal") && name.endsWith(".dmg"))?.asset ??
+        null
       );
     }
+    // universal 우선 → 다른 dmg fallback.
     return (
-      lower.find(({ name }) => name.includes("universal") && name.endsWith(".dmg"))
-        ?.asset ??
+      lower.find(({ name }) => name.includes("universal") && name.endsWith(".dmg"))?.asset ??
       lower.find(({ name }) => name.endsWith(".dmg"))?.asset ??
       null
     );

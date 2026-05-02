@@ -176,6 +176,42 @@
       .alt-downloads a:hover {
         text-decoration: underline;
       }
+      .install-help {
+        margin-top: 20px;
+        max-width: 540px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: left;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 13px;
+      }
+      .install-help summary {
+        cursor: pointer;
+        color: var(--primary-dark);
+        font-weight: 600;
+        outline: none;
+      }
+      .install-help summary:hover {
+        text-decoration: underline;
+      }
+      .install-help ul {
+        margin: 12px 0 4px;
+        padding-left: 20px;
+        color: var(--ink);
+      }
+      .install-help li {
+        margin: 6px 0;
+        line-height: 1.6;
+      }
+      .install-help code {
+        background: var(--bg);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
       .features {
         padding: 60px 0;
         display: grid;
@@ -326,7 +362,7 @@
       <header>
         <div class="brand">
           Vibemate
-          <span class="version-pill" id="version">v0.2.1</span>
+          <span class="version-pill" id="version">v0.2.3</span>
         </div>
         <nav>
           <a href="#features">기능</a>
@@ -377,12 +413,22 @@
 
           <div class="alt-downloads">
             <span>다른 OS:</span>
-            <a id="dl-win" href="#">Windows</a>·
+            <a id="dl-win" href="#">Windows (.exe)</a>·
+            <a id="dl-win-msi" href="#" title="AhnLab V3 등 안티바이러스 차단 시">Windows (.msi)</a>·
             <a id="dl-mac" href="#">Mac (Universal)</a>·
             <a id="dl-mac-arm" href="#">Mac M1/M2</a>·
-            <a id="dl-mac-intel" href="#">Mac Intel</a>·
-            <a id="dl-linux" href="#">Linux</a>
+            <a id="dl-mac-intel" href="#">Mac Intel</a>
           </div>
+
+          <details class="install-help">
+            <summary>설치가 안 되시나요? (Windows 사용자)</summary>
+            <ul>
+              <li><strong>SmartScreen 경고</strong> ("Windows에서 PC를 보호했습니다") → "추가 정보" 클릭 → "실행" 버튼</li>
+              <li><strong>AhnLab V3 / 알약 등 백신 차단</strong> → 위의 <em>Windows (.msi)</em> 받기 (또는 백신 일시 중지 후 재시도)</li>
+              <li><strong>UAC 팝업</strong> ("이 앱이 디바이스를 변경할 수 있도록 허용하시겠어요?") → "예" 클릭</li>
+              <li><strong>설치 후 안 보임</strong> → 시작 메뉴에서 <code>vibemate</code> 검색</li>
+            </ul>
+          </details>
         </div>
       </section>
 
@@ -416,7 +462,7 @@
       <section class="stages" id="flow">
         <h2>입문자 10단계 여정 전구간을 책임집니다</h2>
         <p class="lead">
-          한 단계라도 막히면 코딩을 포기합니다. TG는 그 모든 막힘을 미리 풀어둡니다.
+          어떤 단계에서 막혀도 가디언이 옆에 있어요. Vibemate 가 막힘을 미리 풀어둡니다.
         </p>
         <ol class="stage-list">
           <li><strong>STAGE 0</strong>인지·동기 형성</li>
@@ -494,10 +540,14 @@
         // login_required 쿼리 = 다운로드 게이트에서 튕긴 사용자
         if (new URLSearchParams(location.search).get("login_required")) {
           const cta = document.getElementById("cta-anon");
-          const note = document.createElement("p");
-          note.style.cssText = "color:var(--primary-dark);font-size:13px;margin-top:8px";
-          note.textContent = "다운로드를 받으려면 먼저 로그인해주세요.";
-          cta.appendChild(note);
+          // 중복 추가 방지 (재로드 시).
+          if (!cta.querySelector(".login-required-note")) {
+            const note = document.createElement("p");
+            note.className = "login-required-note";
+            note.style.cssText = "color:var(--primary-dark);font-size:13px;margin-top:8px";
+            note.textContent = "다운로드를 받으려면 먼저 로그인해주세요.";
+            cta.appendChild(note);
+          }
         }
       }
 
@@ -510,15 +560,17 @@
 
         const links = {
           win: document.getElementById("dl-win"),
+          "win-msi": document.getElementById("dl-win-msi"),
           mac: document.getElementById("dl-mac"),
           "mac-arm": document.getElementById("dl-mac-arm"),
           "mac-intel": document.getElementById("dl-mac-intel"),
-          linux: document.getElementById("dl-linux"),
         };
         for (const [k, el] of Object.entries(links)) {
           if (el) el.href = `${BACKEND}/download/${k}`;
         }
 
+        // GitHub Releases 페이지를 보편적 fallback 으로 (백엔드 다운 시).
+        const RELEASES_URL = "https://github.com/mickeys67-svg/aiguardian/releases/latest";
         try {
           const res = await fetch(`${BACKEND}/latest`);
           if (res.ok) {
@@ -529,15 +581,20 @@
               primary.href = `${BACKEND}/download/${detected}`;
               primaryLabel.textContent = platformLabel(detected);
             } else {
-              primaryLabel.textContent = "다운로드";
+              primary.href = RELEASES_URL;
+              primaryLabel.textContent = "GitHub Releases 에서 다운로드";
             }
           } else {
-            primaryLabel.textContent = "곧 다운로드 가능";
-            primaryMeta.textContent = "릴리스 빌드 진행 중";
+            // 503 등 서버 응답 — GitHub Releases 페이지로 fallback.
+            primaryLabel.textContent = "GitHub Releases 에서 다운로드";
+            primaryMeta.textContent = "백엔드 점검 중 — 직접 다운로드";
+            primary.href = RELEASES_URL;
           }
         } catch (e) {
-          primaryLabel.textContent = "다운로드";
-          primary.href = "#";
+          // 네트워크 / CORS 실패 — GitHub Releases 직링크 fallback.
+          primaryLabel.textContent = "GitHub Releases 에서 다운로드";
+          primaryMeta.textContent = "백엔드 연결 실패 — 직접 다운로드";
+          primary.href = RELEASES_URL;
         }
       }
 

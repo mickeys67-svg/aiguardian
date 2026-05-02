@@ -3,6 +3,8 @@
 // 사용자가 명시적으로 동의한 경우에만 백엔드 /telemetry 로 전송.
 // 개인 식별 정보 전송 금지 (디바이스 ID는 hash, 명령 원문 X).
 
+import { APP_VERSION } from "./version";
+
 const TELEMETRY_KEY = "tg.telemetry.optedIn";
 const ANON_ID_KEY = "tg.anonId";
 const BACKEND = (import.meta.env.VITE_TG_BACKEND as string | undefined) ?? "https://api.vibemate.kr";
@@ -38,7 +40,7 @@ export function track(event: EventName, props: Record<string, unknown> = {}): vo
     event,
     anonId: anonId(),
     timestamp: new Date().toISOString(),
-    appVersion: "0.1.0",
+    appVersion: APP_VERSION,
     props,
   });
   // sendBeacon 은 페이지 unload 에도 안전하지만 데스크톱 앱에선 fetch 도 OK.

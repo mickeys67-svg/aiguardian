@@ -51,7 +51,8 @@ const ALLOWED_ORIGINS = [
 app.use(
   "*",
   cors({
-    origin: (origin) => (ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]),
+    // 화이트리스트 외 origin 은 null 반환 → 브라우저 CORS 거부 (credentials wildcard 함정 방어).
+    origin: (origin) => (ALLOWED_ORIGINS.includes(origin) ? origin : null),
     allowHeaders: ["content-type"],
     credentials: true,
   }),
@@ -67,7 +68,7 @@ app.get("/me", meHandler);
 app.post("/auth/logout", logoutHandler);
 
 app.get("/health", (c) =>
-  c.json({ ok: true, service: "tg-backend", version: "0.1.0" }),
+  c.json({ ok: true, service: "tg-backend", name: "Vibemate Backend", version: "0.2.3" }),
 );
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -186,6 +187,9 @@ app.get("/download/:platform", async (c) => {
       case "win":
       case "windows":
         return pickAsset(release, "windows");
+      case "win-msi":
+        // AhnLab/V3 등 NSIS 차단 회피용 MSI 강제.
+        return pickAsset(release, "windows", undefined, "msi");
       case "mac":
         return pickAsset(release, "macos", "universal");
       case "mac-arm":
@@ -307,11 +311,21 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
+/** Constant-time 문자열 비교 — timing attack 방어. */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 /** GitHub Actions release 직후 캐시 무효화. Bearer 토큰 필요. */
 app.post("/admin/purge", async (c) => {
   const auth = c.req.header("authorization") ?? "";
   const token = auth.replace(/^Bearer\s+/i, "");
-  if (!c.env.PURGE_TOKEN || token !== c.env.PURGE_TOKEN) {
+  if (!c.env.PURGE_TOKEN || !timingSafeEqual(token, c.env.PURGE_TOKEN)) {
     return c.json({ error: "unauthorized" }, 401);
   }
   const body = await c.req.json().catch(() => ({}));
