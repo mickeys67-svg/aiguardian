@@ -3,24 +3,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-
-const FRIENDLY_TRANSLATIONS: Array<{ pattern: RegExp; ko: string }> = [
-  { pattern: /command not found/i, ko: "그 명령어를 컴퓨터가 못 찾았어요. 도구가 안 깔렸을 수 있어요." },
-  { pattern: /permission denied/i, ko: "권한이 부족해요. 비밀번호 한 번만 더 물어볼 수 있어요." },
-  { pattern: /no such file or directory/i, ko: "그 폴더나 파일이 없어요. 위치를 다시 확인할게요." },
-  { pattern: /address already in use/i, ko: "그 포트가 이미 다른 프로그램이 쓰고 있어요." },
-  { pattern: /network is unreachable|getaddrinfo|enotfound/i, ko: "인터넷 연결이 잠깐 끊긴 것 같아요." },
-  { pattern: /syntax of the command is incorrect|filename.*syntax is incorrect/i, ko: "명령어 형식이 컴퓨터에 안 맞았어요. 가디언이 더 안전하게 다시 써줄게요." },
-  { pattern: /the system cannot find the (path|file)/i, ko: "그 폴더나 파일을 못 찾았어요. 가디언이 만들어 드릴게요." },
-  { pattern: /access (is )?denied/i, ko: "권한이 부족해요. 관리자 권한이 필요할 수 있어요." },
-];
-
-function translate(message: string): string {
-  for (const { pattern, ko } of FRIENDLY_TRANSLATIONS) {
-    if (pattern.test(message)) return ko;
-  }
-  return "이 에러는 처음 보는 종류예요. 같이 풀어볼게요.";
-}
+import { translateError } from "@/lib/errorTranslate";
 
 interface Props {
   rawError: string;
@@ -30,7 +13,12 @@ interface Props {
 
 export function ErrorPanel({ rawError, onAskAi, onDismiss }: Props) {
   const [showRaw, setShowRaw] = useState(false);
-  const friendly = translate(rawError);
+  const translated = translateError(rawError);
+  // 친절 메시지 — 풍부한 매칭 (errorTranslate.ts 17 패턴) → fallback.
+  const friendlyTitle = translated?.title ?? "☕ 잠깐 멈췄어요";
+  const friendlyFix =
+    translated?.fix ??
+    "이 에러는 처음 보는 종류예요. AI 한테 같이 물어볼게요.";
 
   return (
     <motion.section
@@ -43,10 +31,10 @@ export function ErrorPanel({ rawError, onAskAi, onDismiss }: Props) {
         <span className="text-2xl" aria-hidden>
           ☕
         </span>
-        <h2 className="text-lg font-semibold text-ink">잠깐 멈췄어요</h2>
+        <h2 className="text-lg font-semibold text-ink">{friendlyTitle}</h2>
       </header>
 
-      <p className="text-sm text-ink mb-2">{friendly}</p>
+      <p className="text-sm text-ink mb-2">{friendlyFix}</p>
       <p className="text-xs text-subtle mb-5">
         에러는 실패가 아니에요. 컴퓨터가 도움 요청하는 거예요.
       </p>

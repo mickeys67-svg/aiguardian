@@ -104,6 +104,23 @@ export const useApp = create<AppState>((set, get) => ({
     }
   },
   finishOnboarding: () => {
+    // 첫 레시피 결과물이 활성 run 에 있는데 projectId 가 없으면
+    // (artifactPath 가 set 안 됐거나 race 케이스) 여기서라도 projects 에 추가 →
+    // Home 의 "방금 끝낸 작품" 에 노출되게 보장.
+    const run = get().activeRun;
+    if (run && run.recipeId !== "unknown" && !run.projectId) {
+      try {
+        const rec: ProjectRecord = addProject({
+          recipeId: run.recipeId,
+          recipeTitle: run.label ?? "첫 작품",
+          artifactPath: run.artifactPath ?? "",
+          label: run.label ?? "내 첫 작품",
+        });
+        set({ activeRun: { ...run, projectId: rec.id } });
+      } catch (e) {
+        console.error("finishOnboarding: addProject 실패", e);
+      }
+    }
     localStorage.setItem(STORAGE_KEY, "main");
     set({ mode: "main", section: "home" });
   },

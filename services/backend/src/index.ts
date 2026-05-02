@@ -68,7 +68,7 @@ app.get("/me", meHandler);
 app.post("/auth/logout", logoutHandler);
 
 app.get("/health", (c) =>
-  c.json({ ok: true, service: "tg-backend", name: "Vibemate Backend", version: "0.2.3" }),
+  c.json({ ok: true, service: "tg-backend", name: "Vibemate Backend", version: "0.2.4" }),
 );
 
 // ────────────────────────────────────────────────────────────────────────────

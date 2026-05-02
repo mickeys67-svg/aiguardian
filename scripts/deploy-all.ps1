@@ -1,4 +1,4 @@
-# TG 배포 스크립트 — Cloudflare D1/KV/Workers/Pages + GitHub repo 일괄 셋업
+# Vibemate 배포 스크립트 — Cloudflare D1/KV/Workers/Pages + GitHub repo 일괄 셋업
 #
 # 처음 한 번만:
 #   .\scripts\deploy-all.ps1 -GhOwner <username> -GhRepo aiguardian -Domain vibemate.kr

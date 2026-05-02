@@ -42,6 +42,17 @@ export function Diagnosis() {
     return () => window.clearInterval(id);
   }, [isLoading, data]);
 
+  // 15초 넘게 걸리면 "오래 걸리네요" 안내 — 사용자가 멈춘 줄 알고 종료하는 걸 차단.
+  const [stalled, setStalled] = useState(false);
+  useEffect(() => {
+    if (!isLoading) {
+      setStalled(false);
+      return;
+    }
+    const t = window.setTimeout(() => setStalled(true), 15000);
+    return () => window.clearTimeout(t);
+  }, [isLoading]);
+
   // 자동 next + skip 버튼 race 방어 — guardRef.
   const advancedRef = useRef(false);
   useEffect(() => {
@@ -113,6 +124,39 @@ export function Diagnosis() {
               <AutoTerm>{STEPS[stepIdx] ?? ""}</AutoTerm>
             </motion.p>
           </AnimatePresence>
+
+          {/* 15초 이상 걸리면 안내 — 멈춘 게 아님을 알림. */}
+          {stalled && isLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 rounded-xl bg-warning/10 border border-warning/30 p-3 text-left"
+            >
+              <p className="text-xs text-ink mb-2 font-medium">
+                ⏳ 오래 걸리네요...
+              </p>
+              <p className="text-[11px] text-subtle leading-relaxed mb-3">
+                일부 도구 (Python, AI 도구 등) 가 깊이 있어서 시간이 더 걸릴 수 있어요.
+                30초 더 기다리거나, 건너뛰고 진행해도 돼요.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="flex-1 px-3 py-1.5 rounded-lg bg-surface border border-subtle/20 text-[11px] text-subtle hover:text-ink"
+                >
+                  🔄 다시 시도
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="flex-1 px-3 py-1.5 rounded-lg bg-primary text-white text-[11px] font-medium"
+                >
+                  ⏭ 건너뛰고 진행
+                </button>
+              </div>
+            </motion.div>
+          )}
         </>
       )}
 

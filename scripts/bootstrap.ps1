@@ -1,4 +1,4 @@
-# TG (Terminal Guardian) — Windows 개발 환경 부트스트랩
+# Vibemate — Windows 개발 환경 부트스트랩
 #
 # 사용법: 관리자 권한 PowerShell 에서
 #   cd E:\aiguardian

@@ -83,7 +83,28 @@ pub fn write_file(path: String, contents: String) -> Result<FileWriteResult, Str
 #[tauri::command]
 pub fn read_file(path: String) -> Result<String, String> {
     let resolved = resolve_safe_path(&path)?;
-    fs::read_to_string(&resolved).map_err(|e| format!("파일 읽기 실패: {e}"))
+    let bytes = fs::read(&resolved).map_err(|e| format!("파일 읽기 실패: {e}"))?;
+    // BOM 제거 — Windows 메모장 등이 UTF-8 파일에 BOM (EF BB BF) 추가하는 경우.
+    // BOM 이 남으면 JSON parse / regex / 첫 문자 비교 등에서 미세한 버그 유발.
+    let content = strip_bom(&bytes);
+    String::from_utf8(content)
+        .map_err(|e| format!("파일이 UTF-8 이 아니에요: {e}"))
+}
+
+/// UTF-8 / UTF-16 BE / UTF-16 LE BOM 제거.
+fn strip_bom(bytes: &[u8]) -> Vec<u8> {
+    if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
+        // UTF-8 BOM
+        bytes[3..].to_vec()
+    } else if bytes.starts_with(&[0xFE, 0xFF]) {
+        // UTF-16 BE BOM — Tauri Web 영역에서 처리 어려우니 거부 (드뭄)
+        bytes.to_vec()
+    } else if bytes.starts_with(&[0xFF, 0xFE]) {
+        // UTF-16 LE BOM
+        bytes.to_vec()
+    } else {
+        bytes.to_vec()
+    }
 }
 
 #[cfg(test)]

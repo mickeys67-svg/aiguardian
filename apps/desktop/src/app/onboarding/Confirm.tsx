@@ -33,7 +33,18 @@ export function Confirm() {
   const [errored, setErrored] = useState<StepRunResult | null>(null);
   // Confirm 첫 진입 시 단축키 치트시트 자동 노출. shared helper.
   const [cheatsheetOpen, setCheatsheetOpen] = useState(shouldShowCheatsheet);
+  // 진짜 실행 직전 관리자 권한 안내 모달.
+  const [adminWarningOpen, setAdminWarningOpen] = useState(false);
   const next = useApp((s) => s.next);
+
+  // 명령어 중에 관리자 권한 / UAC 가 필요한 패턴 검출.
+  const needsAdmin = useMemo(() => {
+    if (!recipe) return false;
+    return recipe.steps.some((s) => {
+      const cmd = (s.command + " " + (s.windowsCommand ?? "")).toLowerCase();
+      return /\b(npm install -g|sudo|elevate|runas|winget install|choco install|setx \/m|reg add hklm)\b/i.test(cmd);
+    });
+  }, [recipe]);
 
   useEffect(() => {
     // results.length === 0 이면 vacuously every() = true 라 빈 자동 next 방지.
@@ -163,11 +174,59 @@ export function Confirm() {
       {mode === "dry-done" && !hasFailure && (
         <button
           type="button"
-          onClick={() => runSteps(false)}
+          onClick={() => {
+            if (needsAdmin) {
+              setAdminWarningOpen(true);
+            } else {
+              runSteps(false);
+            }
+          }}
           className="w-full px-6 py-3 rounded-xl bg-primary text-white font-medium shadow-sm hover:opacity-90 transition"
         >
           ✓ 진짜 실행할게요
         </button>
+      )}
+
+      {/* 관리자 권한 사전 안내 모달 — UAC 갑작스러운 등장으로 인한 멘붕 차단. */}
+      {adminWarningOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
+          <div className="bg-surface rounded-2xl border border-subtle/15 max-w-md w-full p-6 shadow-xl">
+            <div className="text-3xl mb-3" aria-hidden>🛡</div>
+            <h3 className="text-lg font-bold text-ink mb-2">
+              잠깐, 관리자 권한이 필요해요
+            </h3>
+            <p className="text-sm text-ink mb-3">
+              이 작업은 시스템에 도구를 깔아드려요. Windows 가 잠깐 <strong>UAC</strong> 라는 창을 띄울 거예요:
+            </p>
+            <div className="bg-bg border border-subtle/20 rounded-xl p-3 mb-3 text-xs text-subtle font-mono">
+              "이 앱이 디바이스를 변경할 수 있도록 허용하시겠어요?"
+            </div>
+            <p className="text-xs text-subtle mb-5 leading-relaxed">
+              걱정하지 마세요 — Vibemate 가 안전 검사한 명령만 실행해요. <strong>예</strong> 를 누르시면 됩니다.
+              <br />
+              ⚠ 만약 백신 (V3, 알약 등) 이 차단하면 일시 중지 후 재시도하세요.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setAdminWarningOpen(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-subtle/20 text-sm text-subtle hover:text-ink"
+              >
+                나중에
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAdminWarningOpen(false);
+                  runSteps(false);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90"
+              >
+                알겠어요, 실행
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {(mode === "dry-running" || mode === "running") && (

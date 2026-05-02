@@ -1,5 +1,14 @@
 -- Google OAuth + 세션 + 다운로드 트래킹 (v0.2.1).
 -- 정식 서비스 진입 — 익명 다운로드 → 로그인 필수 다운로드 전환.
+--
+-- ⚠ 멱등성 주의:
+--   SQLite 는 ALTER TABLE ADD COLUMN IF NOT EXISTS 미지원.
+--   재실행 시 "duplicate column" 에러로 깨짐.
+--   안전판:
+--     - 운영: wrangler d1 migrations apply 가 이름 단위 추적 → 자동 1회만 실행
+--     - 로컬 개발: 이 마이그레이션을 다시 돌리려면 D1 DB 자체를 재생성하거나
+--                  ALTER 줄을 일시 주석 처리 후 재실행
+--     - 향후 컬럼 추가 마이그레이션은 별도 파일 (0005_xxx.sql) 로 분리
 
 -- 기존 users 확장 (SQLite 는 ALTER TABLE ADD COLUMN 만 지원).
 ALTER TABLE users ADD COLUMN google_sub TEXT;
