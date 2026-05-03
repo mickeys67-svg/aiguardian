@@ -7,7 +7,7 @@
 
 취약점을 발견하셨다면 **공개 이슈 트래커가 아닌** 아래 채널로 보고해 주세요.
 
-- 이메일: `<TBD: security@example.com>`
+- 이메일: `mickeys67@gmail.com` (제목 앞에 `[SECURITY]` 권장)
 - PGP 키: `<TBD: 키 ID 또는 keys.openpgp.org URL>`
 - 대체 경로: GitHub Security Advisories (`Security` 탭 → `Report a vulnerability`)
 
