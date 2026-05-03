@@ -203,6 +203,17 @@
       footer a {
         color: var(--primary-dark);
       }
+      .legal-links {
+        margin: 12px 0;
+        font-size: 12px;
+      }
+      .legal-links a {
+        margin: 0 8px;
+        text-decoration: none;
+      }
+      .legal-links a:hover {
+        text-decoration: underline;
+      }
       .badge {
         display: inline-block;
         padding: 4px 10px;
@@ -313,6 +324,12 @@
         <p>
           베타 메일링: <a href="mailto:beta@terminalguardian.kr">beta@terminalguardian.kr</a>
         </p>
+        <p class="legal-links">
+          <a id="link-privacy" href="#" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a>·
+          <a id="link-terms" href="#" target="_blank" rel="noopener noreferrer">이용약관</a>·
+          <a id="link-security" href="#" target="_blank" rel="noopener noreferrer">보안 정책</a>·
+          <a id="link-license" href="#" target="_blank" rel="noopener noreferrer">라이선스</a>
+        </p>
         <p>© 2026 TG Project · 가코드명, 정식 브랜드 Week 4~5 확정</p>
       </footer>
     </div>
@@ -368,6 +385,13 @@
         };
         for (const [k, el] of Object.entries(links)) {
           el.href = `${BACKEND}/download/${k}`;
+        }
+
+        // 법무 문서 링크 — backend /legal/{kind} 가 운영자 설정 URL 또는 GitHub repo 로 redirect
+        const legalLinks = ["privacy", "terms", "security", "license"];
+        for (const kind of legalLinks) {
+          const el = document.getElementById(`link-${kind}`);
+          if (el) el.href = `${BACKEND}/legal/${kind}`;
         }
 
         // 메타 가져오기 (실패해도 GitHub Releases 전체 페이지로 fallback)

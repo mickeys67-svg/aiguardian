@@ -14,7 +14,50 @@ type Bindings = {
   GH_REPO?: string;
   GH_TOKEN?: string;
   PURGE_TOKEN?: string;
+  // 법무 문서 redirect 대상 (운영자가 wrangler secret 으로 주입).
+  // 미설정 시 503 + 안내 메시지.
+  LEGAL_PRIVACY_URL?: string;
+  LEGAL_TERMS_URL?: string;
+  LEGAL_SECURITY_URL?: string;
+  LEGAL_LICENSE_URL?: string;
 };
+
+// docs/legal/data-categories.md 와 동기화. 화이트리스트 외 키는 거부.
+const TELEMETRY_EVENT_PROPS: Record<string, ReadonlySet<string>> = {
+  "tg.stage.entered": new Set(["stage", "os"]),
+  "tg.tip.shown": new Set(["tipId", "priority"]),
+  "tg.command.executed": new Set([
+    "recipeId",
+    "stepIndex",
+    "outcome",
+    "durationBucket",
+  ]),
+  "tg.error.captured": new Set(["errorClass", "recipeId"]),
+  "tg.deploy.completed": new Set(["target", "recipeId", "firstTime"]),
+};
+
+const TELEMETRY_BLOCKED_KEYS = new Set([
+  "email",
+  "name",
+  "phone",
+  "address",
+  "ip",
+  "mac",
+  "deviceId",
+  "serial",
+  "command",
+  "stdout",
+  "stderr",
+  "code",
+  "prompt",
+  "path",
+  "filename",
+  "cwd",
+  "apiKey",
+  "token",
+  "password",
+  "secret",
+]);
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -64,6 +107,29 @@ app.post("/telemetry", async (c) => {
   if (typeof event !== "string" || typeof anonId !== "string") {
     return c.json({ error: "missing fields" }, 400);
   }
+  // 알려진 이벤트만 허용 — data-categories.md 의 카탈로그 외 거부.
+  const allowedKeys = TELEMETRY_EVENT_PROPS[event];
+  if (!allowedKeys) {
+    return c.json({ error: "unknown event" }, 400);
+  }
+  // anonId 형식: UUID v4 만 허용 (개인 식별자 우회 차단).
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(anonId)) {
+    return c.json({ error: "invalid anonId" }, 400);
+  }
+  // props 검증: 차단 키 거부 + 화이트리스트 외 키 제거.
+  let cleanProps: Record<string, unknown> | null = null;
+  if (props && typeof props === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(props as Record<string, unknown>)) {
+      if (TELEMETRY_BLOCKED_KEYS.has(k)) {
+        return c.json({ error: "blocked key", key: k }, 400);
+      }
+      if (allowedKeys.has(k)) {
+        out[k] = v;
+      }
+    }
+    cleanProps = out;
+  }
   if (c.env.DB) {
     await c.env.DB.prepare(
       "INSERT INTO telemetry_events (event, anon_id, timestamp, app_version, props) VALUES (?, ?, ?, ?, ?)",
@@ -73,11 +139,72 @@ app.post("/telemetry", async (c) => {
         anonId,
         typeof timestamp === "string" ? timestamp : new Date().toISOString(),
         typeof appVersion === "string" ? appVersion : null,
-        props ? JSON.stringify(props) : null,
+        cleanProps ? JSON.stringify(cleanProps) : null,
       )
       .run();
   }
   return c.json({ accepted: true });
+});
+
+/**
+ * 정보주체의 삭제권 (GDPR Art.17 / PIPA §36 / CCPA §1798.105).
+ * 익명 ID 기반이므로 본인 인증 불필요 — 본인의 anonId 를 아는 사람만 삭제 가능.
+ */
+app.delete("/telemetry/:anonId", async (c) => {
+  const anonId = c.req.param("anonId");
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(anonId)) {
+    return c.json({ error: "invalid anonId" }, 400);
+  }
+  if (!c.env.DB) {
+    return c.json({ deleted: 0, note: "no DB binding" });
+  }
+  const res = await c.env.DB.prepare(
+    "DELETE FROM telemetry_events WHERE anon_id = ?",
+  )
+    .bind(anonId)
+    .run();
+  return c.json({ deleted: res.meta.changes ?? 0 });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 법무 문서 redirect — 도메인 결정 후 wrangler secret 으로 주입.
+//   wrangler secret put LEGAL_PRIVACY_URL  (예: https://docs.example.com/privacy)
+//   wrangler secret put LEGAL_TERMS_URL
+//   wrangler secret put LEGAL_SECURITY_URL
+//   wrangler secret put LEGAL_LICENSE_URL
+// 미설정 시 503 + 사용자 안내 + 폴백으로 GitHub repo 의 raw 마크다운 시도.
+// ────────────────────────────────────────────────────────────────────────────
+
+const LEGAL_FALLBACK_PATH: Record<string, string> = {
+  privacy: "docs/legal/privacy-policy.md",
+  terms: "docs/legal/terms.md",
+  security: "SECURITY.md",
+  license: "LICENSE",
+};
+
+app.get("/legal/:kind", (c) => {
+  const kind = c.req.param("kind");
+  const envKey = `LEGAL_${kind.toUpperCase()}_URL` as keyof Bindings;
+  const configured = c.env[envKey] as string | undefined;
+  if (configured) {
+    return c.redirect(configured, 302);
+  }
+  // 폴백: GitHub repo 의 raw 마크다운으로 redirect (운영자가 GH_OWNER/GH_REPO 설정한 경우).
+  const fallback = LEGAL_FALLBACK_PATH[kind];
+  if (fallback && c.env.GH_OWNER && c.env.GH_REPO) {
+    return c.redirect(
+      `https://github.com/${c.env.GH_OWNER}/${c.env.GH_REPO}/blob/main/${fallback}`,
+      302,
+    );
+  }
+  return c.json(
+    {
+      error: "legal document URL not configured",
+      kind,
+      hint: `Set ${String(envKey)} via wrangler secret, or configure GH_OWNER/GH_REPO for GitHub fallback.`,
+    },
+    503,
+  );
 });
 
 app.get("/error-patterns", async (c) => {

@@ -7,7 +7,8 @@ import {
   registerMcp,
   type McpStatus,
 } from "@/lib/tauri";
-import { isOptedIn, setOptedIn } from "@/lib/telemetry";
+import { isOptedIn, requestDataDeletion, setOptedIn } from "@/lib/telemetry";
+import { legalUrl } from "@/lib/legal";
 
 const AI_LABEL: Record<McpStatus["client"], string> = {
   claude_desktop: "Claude Desktop",
@@ -20,6 +21,20 @@ export function Settings() {
   const qc = useQueryClient();
   const [telemetry, setTelemetry] = useState(isOptedIn());
   const [rescanning, setRescanning] = useState(false);
+  const [deletionState, setDeletionState] = useState<
+    "idle" | "confirming" | "deleting" | "ok" | "fail"
+  >("idle");
+
+  const handleDeleteData = async () => {
+    if (deletionState !== "confirming") {
+      setDeletionState("confirming");
+      return;
+    }
+    setDeletionState("deleting");
+    const { ok } = await requestDataDeletion();
+    setTelemetry(false);
+    setDeletionState(ok ? "ok" : "fail");
+  };
 
   const { data: mcpStatuses } = useQuery({
     queryKey: ["mcp-status"],
@@ -71,7 +86,7 @@ export function Settings() {
 
       <Section title="개인정보">
         <Row
-          label="익명 사용 통계"
+          label="익명 사용 통계 (선택)"
           hint="가디언 개선용. 명령어·파일 내용은 절대 안 보내요."
         >
           <input
@@ -83,6 +98,53 @@ export function Settings() {
             }}
             className="rounded text-primary focus:ring-primary/40"
           />
+        </Row>
+        <Row label="개인정보 처리방침" hint="수집 항목·보유기간·정보주체 권리">
+          <a
+            href={legalUrl("privacy")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary underline"
+          >
+            열기 ↗
+          </a>
+        </Row>
+        <Row label="이용약관 / EULA" hint="베타 단계 안내·책임 한계">
+          <a
+            href={legalUrl("terms")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary underline"
+          >
+            열기 ↗
+          </a>
+        </Row>
+        <Row
+          label="내 데이터 삭제 요청"
+          hint={
+            deletionState === "confirming"
+              ? "정말 삭제할까요? 한 번 더 누르면 진행돼요."
+              : deletionState === "ok"
+                ? "삭제 요청 완료. 옵트아웃 + 익명 ID 회전됨."
+                : deletionState === "fail"
+                  ? "백엔드 응답 실패. 잠시 후 다시 시도해 주세요."
+                  : "옵트아웃 + 익명 ID 회전 + 백엔드 과거 이벤트 삭제."
+          }
+        >
+          <button
+            type="button"
+            onClick={handleDeleteData}
+            disabled={deletionState === "deleting"}
+            className="px-3 py-1 rounded-lg bg-error text-white text-xs font-medium disabled:opacity-50 hover:opacity-90 transition"
+          >
+            {deletionState === "deleting"
+              ? "삭제 중..."
+              : deletionState === "confirming"
+                ? "확인 — 정말 삭제"
+                : deletionState === "ok"
+                  ? "완료"
+                  : "삭제 요청"}
+          </button>
         </Row>
       </Section>
 
@@ -141,8 +203,25 @@ export function Settings() {
         <Row label="버전" hint="첫 정식 출시는 v1.0">
           <span className="text-xs font-mono text-ink">0.1.0</span>
         </Row>
-        <Row label="라이선스" hint="v1.0 전 오픈소스 범위 결정">
-          <span className="text-xs text-subtle">Closed Beta</span>
+        <Row label="라이선스" hint="v1.0 전 오픈소스 범위 결정 (ADR-0003)">
+          <a
+            href={legalUrl("license")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary underline"
+          >
+            Closed Beta ↗
+          </a>
+        </Row>
+        <Row label="보안 정책 / 취약점 신고" hint="CVD · SBOM · 응답 SLA">
+          <a
+            href={legalUrl("security")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary underline"
+          >
+            열기 ↗
+          </a>
         </Row>
       </Section>
     </div>

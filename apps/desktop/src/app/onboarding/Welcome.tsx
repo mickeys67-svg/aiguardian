@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useOnboarding } from "../state";
 import { isOptedIn, setOptedIn } from "@/lib/telemetry";
+import { legalUrl } from "@/lib/legal";
 
 export function Welcome() {
   const next = useOnboarding((s) => s.next);
@@ -29,15 +30,24 @@ export function Welcome() {
         걱정 마세요. 부족한 건 제가 다 깔아드릴게요. 비밀번호는 한 번만 물어봐요.
       </p>
 
-      <label className="flex items-center justify-center gap-2 mb-6 text-xs text-subtle cursor-pointer">
+      <label className="flex items-start justify-center gap-2 mb-3 text-xs text-subtle cursor-pointer">
         <input
           type="checkbox"
           checked={telemetry}
           onChange={(e) => setTelemetry(e.target.checked)}
-          className="rounded text-primary focus:ring-primary/40"
+          className="mt-0.5 rounded text-primary focus:ring-primary/40"
         />
-        <span>
-          익명 사용 통계 보내기 (가디언 개선용 · 명령어·파일 내용 절대 안 보내요)
+        <span className="text-left">
+          <strong>(선택)</strong> 익명 사용 통계 보내기 — 가디언 개선용. 명령어·파일 내용은 절대 안 보내요.
+          {" "}
+          <a
+            href={legalUrl("privacy")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline"
+          >
+            어떤 데이터인지 보기
+          </a>
         </span>
       </label>
 
@@ -48,7 +58,29 @@ export function Welcome() {
       >
         시작할게요
       </button>
-      <p className="mt-6 text-xs text-subtle">v0.1 · TG (Terminal Guardian)</p>
+
+      <p className="mt-4 text-[11px] text-subtle">
+        시작을 누르면{" "}
+        <a
+          href={legalUrl("terms")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
+          이용약관
+        </a>
+        {" "}및{" "}
+        <a
+          href={legalUrl("privacy")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
+          개인정보 처리방침
+        </a>
+        에 동의하는 것으로 간주됩니다. 만 14세 미만은 법정대리인의 동의가 필요해요.
+      </p>
+      <p className="mt-3 text-xs text-subtle">v0.1 · TG (Terminal Guardian)</p>
     </motion.section>
   );
 }
