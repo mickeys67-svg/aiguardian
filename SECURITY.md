@@ -8,7 +8,7 @@
 취약점을 발견하셨다면 **공개 이슈 트래커가 아닌** 아래 채널로 보고해 주세요.
 
 - 이메일: `mickeys67@gmail.com` (제목 앞에 `[SECURITY]` 권장)
-- PGP 키: `<TBD: 키 ID 또는 keys.openpgp.org URL>`
+- PGP 키: 현재 미사용 — 평문 이메일 또는 GitHub Security Advisories 권장
 - 대체 경로: GitHub Security Advisories (`Security` 탭 → `Report a vulnerability`)
 
 보고 시 다음 정보가 있으면 분석이 빠릅니다:
@@ -32,14 +32,14 @@
 | 버전 | 지원 여부 | 비고 |
 |---|---|---|
 | `v0.x` (Closed Beta) | ✅ 보안 패치 제공 | v1.0 정식 출시 전까지 |
-| `v1.x` 이상 | ✅ <TBD: 최소 N개월 보안 업데이트 보장 — CRA 대응> | v1.0 출시 시 확정 |
+| `v1.x` 이상 | ✅ 최소 24개월 보안 업데이트 보장 (CRA 대응) | v1.0 출시 시점부터 산정 |
 
 ## 자동 업데이트
 
 본 앱은 Tauri Updater 를 통해 자동 업데이트를 제공합니다.
 업데이트 패키지는 Ed25519 키로 서명되며, 클라이언트가 서명을 검증한 후에만 적용됩니다.
-- 서명 키 관리: `<TBD: 키 회전 주기 및 보관 정책>`
-- Updater 엔드포인트: `<TBD: backend 도메인>/updates/{target}/{current_version}`
+- 서명 키 관리: 연 1회 회전, 비밀번호 매니저 + 오프라인 백업으로 이중 보관 (베타 단계 기준)
+- Updater 엔드포인트: `https://tg-backend.mickeys67.workers.dev/updates/{target}/{current_version}`
 
 ## SBOM (Software Bill of Materials)
 

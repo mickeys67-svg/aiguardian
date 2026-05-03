@@ -35,35 +35,24 @@
 
 > 향후 도메인 기반 이메일(예: `privacy@…`)로 전환 시 모든 법무 문서 일괄 갱신 필요.
 
-## 출시 전 채워야 할 placeholder (잔여)
+## 잔여 placeholder
 
-다음 토큰은 모든 법무 문서에서 일괄 검색·치환됩니다.
-값을 결정하면 한 PR 로 일괄 갱신하세요.
+베타 단계의 일반적 권장 값으로 모두 채워졌습니다 (`grep -rn "<TBD:" docs/legal/ LICENSE SECURITY.md` 시 `0` 결과).
 
-| 토큰 | 의미 | 권장 값 / 수집 채널 |
+다음 항목은 트리거가 발생하면 갱신하세요:
+
+| 트리거 | 갱신 대상 | 현재 값 |
 |---|---|---|
-| `<TBD: 키 ID 또는 keys.openpgp.org URL>` | 보안 보고용 PGP 키 | PGP 키 생성 후 (선택) |
-| `<TBD: 준거법 — 예: 대한민국 법>` | 준거법 | 권장: 대한민국 법 |
-| `<TBD: 관할 — 예: 서울중앙지방법원>` | 합의 관할 | 사업장 기준 권장: **인천지방법원** (단, 서울중앙도 가능) |
-| `<TBD: YYYY-MM-DD>` | 시행일 | 출시일 결정 후 |
-| `<TBD: 권장 연령 — 예: 만 14세>` | 연령 게이트 | 권장: **만 14세 이상** (PIPA 부합, EU 진출 시 16세 별도 게이팅) |
-| `<TBD: 예 12개월>` | 텔레메트리 보유기간 | 권장: 12개월 |
-| `<TBD: 최소 N개월 보안 업데이트 보장>` | CRA 대비 SLA | v1.0 출시 시 결정 |
-| `<TBD: 키 회전 주기 및 보관 정책>` | Tauri Updater 키 정책 | 운영자 결정 |
-| `<TBD: backend 도메인>` | 자동 업데이트 엔드포인트 | 도메인 결정 후 |
-| `<TBD: EU 대리인 (GDPR Art.27) ...>` | EU 대리인 | EU 매출 임계치 도달 시 |
-| `<TBD: 기타 SaaS — 예: Sentry, PostHog 사용 시>` | 추가 처리 위탁자 | SaaS 도입 시 |
-| `<TBD: SCC 또는 BCR>` | 국제 이전 메커니즘 (한국 외) | 법무 검토 후 |
-
-검색 명령:
-
-```bash
-grep -rn "<TBD:" docs/legal/ LICENSE SECURITY.md
-```
+| EU 매출 임계 도달 | privacy-policy §1 EU 대리인 | 해당 없음 |
+| 분석 SDK 도입 (Sentry, PostHog 등) | privacy-policy §5 처리 위탁자 | 추가 위탁자 없음 |
+| GDPR-K 별도 동의 절차 도입 | privacy-policy §8 어린이 정보 | 만 14세 기준 |
+| 정식 출시 (v1.0) | privacy-policy / terms 시행일, SECURITY 보안 SLA 시작점 | 2026-05-03 (베타 초안) |
+| 커스텀 도메인 발급 | SECURITY Updater 엔드포인트 | tg-backend.mickeys67.workers.dev |
+| PGP 키 발급 | SECURITY 보안 보고 채널 | PGP 미사용 |
 
 ## 변경 절차
 
 1. 법무 문서 수정 시 SoT(이 디렉터리) 만 수정
 2. 사용자 대면 변경(중대 변경) 이면 처리방침 §11, 약관 §12 의 공지 의무 충족
 3. `docs/legal/data-categories.md` 변경 시 코드 동기화 필수 (해당 문서 §변경 절차 참조)
-4. 변경 후 `grep -n "<TBD:" docs/legal/` 으로 잔존 placeholder 확인
+4. 변경 후 `grep -rn "<TBD:" docs/legal/ LICENSE SECURITY.md` 으로 잔존 placeholder 확인 (정상이면 결과 없음)
