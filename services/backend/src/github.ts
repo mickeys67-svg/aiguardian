@@ -72,9 +72,11 @@ export function pickAsset(
   }));
 
   if (target === "windows") {
+    // MSI 우선: 일반 사용자에게 더 직관적이고 SmartScreen/UAC 흐름이 표준화돼있음.
+    // NSIS(-setup.exe)는 fallback이자 Tauri Updater 채널용으로 계속 빌드됨.
     return (
-      lower.find(({ name }) => name.endsWith("-setup.exe"))?.asset ??
       lower.find(({ name }) => name.endsWith(".msi"))?.asset ??
+      lower.find(({ name }) => name.endsWith("-setup.exe"))?.asset ??
       null
     );
   }

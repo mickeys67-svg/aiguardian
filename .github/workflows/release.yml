@@ -76,7 +76,10 @@ jobs:
 
             **다운로드**: 백엔드 `/download/{win,mac,linux}` 또는 아래 자산 직접 다운로드.
 
-            **베타 안내**: Win MSI는 SmartScreen 경고가 뜰 수 있음(EV Cert 미발급). "추가 정보 → 실행" 클릭. Mac dmg는 unsigned이므로 우클릭 → 열기.
+            **베타 안내**:
+            - Windows: 기본 다운로드는 `.msi` 입니다. EV Cert 미발급이라 SmartScreen 경고가 뜰 수 있음 → "추가 정보 → 실행" 클릭. WebView2는 설치기에 오프라인 번들로 포함되므로 인터넷 없이도 설치 가능.
+            - macOS: dmg는 unsigned이므로 우클릭 → 열기.
+            - 자동 업데이트는 Windows의 경우 NSIS `.nsis.zip` 채널을 사용합니다 (앱 내부에서 자동 처리, 사용자 액션 불필요).
 
             자세한 내용: https://terminalguardian.kr
           releaseDraft: false
