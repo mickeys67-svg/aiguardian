@@ -70,7 +70,8 @@ pub fn register_mcp(
     server_command: Option<String>,
     server_args: Option<Vec<String>>,
 ) -> Result<McpStatus, String> {
-    let c = McpClient::from_name(&client).ok_or_else(|| format!("알 수 없는 클라이언트: {client}"))?;
+    let c =
+        McpClient::from_name(&client).ok_or_else(|| format!("알 수 없는 클라이언트: {client}"))?;
     let path = c
         .config_path()
         .ok_or_else(|| "이 OS에서는 지원되지 않는 클라이언트예요.".to_string())?;
@@ -85,15 +86,11 @@ pub fn register_mcp(
 
 /// dev 환경에서 workspace root 의 packages/mcp-server/dist/cli.js 자동 탐지.
 fn default_mcp_invocation() -> Result<(String, Vec<String>), String> {
-    let start = std::env::current_dir()
-        .map_err(|e| format!("작업 디렉토리를 못 찾았어요: {e}"))?;
+    let start = std::env::current_dir().map_err(|e| format!("작업 디렉토리를 못 찾았어요: {e}"))?;
     let cli = find_mcp_cli(&start).ok_or_else(|| {
         "MCP 서버 빌드를 못 찾았어요. 'pnpm --filter @tg/mcp-server build' 한 번 실행 후 다시 연결해주세요.".to_string()
     })?;
-    Ok((
-        "node".to_string(),
-        vec![cli.to_string_lossy().to_string()],
-    ))
+    Ok(("node".to_string(), vec![cli.to_string_lossy().to_string()]))
 }
 
 fn find_mcp_cli(start: &Path) -> Option<PathBuf> {
@@ -110,7 +107,8 @@ fn find_mcp_cli(start: &Path) -> Option<PathBuf> {
 
 #[tauri::command]
 pub fn check_mcp(client: String) -> Result<McpStatus, String> {
-    let c = McpClient::from_name(&client).ok_or_else(|| format!("알 수 없는 클라이언트: {client}"))?;
+    let c =
+        McpClient::from_name(&client).ok_or_else(|| format!("알 수 없는 클라이언트: {client}"))?;
     let path = c
         .config_path()
         .ok_or_else(|| "이 OS에서는 지원되지 않는 클라이언트예요.".to_string())?;

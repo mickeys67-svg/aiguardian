@@ -16,7 +16,10 @@ pub struct FileWriteResult {
 
 fn resolve_safe_path(input: &str) -> Result<PathBuf, String> {
     // ~ 확장
-    let expanded = if let Some(rest) = input.strip_prefix("~/").or_else(|| input.strip_prefix("~\\")) {
+    let expanded = if let Some(rest) = input
+        .strip_prefix("~/")
+        .or_else(|| input.strip_prefix("~\\"))
+    {
         let home = dirs::home_dir().ok_or_else(|| "홈 디렉토리를 찾지 못했어요.".to_string())?;
         home.join(rest)
     } else if input == "~" {

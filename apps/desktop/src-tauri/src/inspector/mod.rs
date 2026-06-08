@@ -50,7 +50,10 @@ pub fn inspect_environment(force: Option<bool>) -> Result<Environment, String> {
             ) {
                 let age = Utc::now().signed_duration_since(ts.with_timezone(&Utc));
                 if age < Duration::hours(CACHE_TTL_HOURS) {
-                    return Ok(Environment { cached: true, ..env });
+                    return Ok(Environment {
+                        cached: true,
+                        ..env
+                    });
                 }
             }
         }
@@ -78,13 +81,19 @@ fn scan_now() -> Environment {
         .or_else(|| std::env::var("ComSpec").ok());
 
     let runtimes = vec![
-        tool("python3", "코드를 실행하는 엔진. 데이터·자동화에 자주 써요."),
+        tool(
+            "python3",
+            "코드를 실행하는 엔진. 데이터·자동화에 자주 써요.",
+        ),
         tool("node", "JavaScript 코드를 실행하는 엔진. 웹·봇에 써요."),
         tool("git", "코드 변경 기록 도구. 거의 모든 개발의 기본이에요."),
     ];
 
     let package_managers = if cfg!(target_os = "macos") {
-        vec![tool("brew", "Mac에서 프로그램들을 한 줄로 깔게 해주는 도구.")]
+        vec![tool(
+            "brew",
+            "Mac에서 프로그램들을 한 줄로 깔게 해주는 도구.",
+        )]
     } else if cfg!(target_os = "windows") {
         vec![tool(
             "winget",
@@ -100,7 +109,11 @@ fn scan_now() -> Environment {
             &claude_desktop_app_paths(),
             claude_desktop_config(),
         ),
-        detect_ai_client("claude_code", &claude_code_app_paths(), claude_code_config()),
+        detect_ai_client(
+            "claude_code",
+            &claude_code_app_paths(),
+            claude_code_config(),
+        ),
         detect_ai_client("cursor", &cursor_app_paths(), cursor_config()),
     ];
 
@@ -153,10 +166,7 @@ fn detect_ai_client(
     // MCP ready: config 파일이 이미 존재하거나, 부모 디렉토리가 존재해서 우리가 쓸 수 있음.
     let mcp_ready = config_path
         .as_ref()
-        .map(|p| {
-            p.exists()
-                || p.parent().map(|parent| parent.exists()).unwrap_or(false)
-        })
+        .map(|p| p.exists() || p.parent().map(|parent| parent.exists()).unwrap_or(false))
         .unwrap_or(false);
 
     AiClientStatus {

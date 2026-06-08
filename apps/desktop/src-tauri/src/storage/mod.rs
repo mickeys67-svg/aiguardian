@@ -43,7 +43,9 @@ pub fn init() -> Result<()> {
 }
 
 pub fn with_db<R>(f: impl FnOnce(&Connection) -> Result<R>) -> Result<R> {
-    let mutex = DB.get().ok_or_else(|| anyhow::anyhow!("DB not initialized"))?;
+    let mutex = DB
+        .get()
+        .ok_or_else(|| anyhow::anyhow!("DB not initialized"))?;
     let guard = mutex
         .lock()
         .map_err(|_| anyhow::anyhow!("DB mutex poisoned"))?;
