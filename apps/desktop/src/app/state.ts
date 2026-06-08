@@ -36,8 +36,10 @@ const ORDER: OnboardingStage[] = [
 
 const STORAGE_KEY = "tg.app.mode";
 
+// 기본 진입 = 메인(코치). 코치가 우리 현관이라, 옛 온보딩 마법사 뒤에 숨기지 않는다.
+// (ADR-0004 "아무나 쉽게". 마법사는 추후 은퇴 대상.)
 const initialMode: AppMode =
-  (localStorage.getItem(STORAGE_KEY) as AppMode | null) ?? "onboarding";
+  (localStorage.getItem(STORAGE_KEY) as AppMode | null) ?? "main";
 
 export const useApp = create<AppState>((set, get) => ({
   mode: initialMode,
