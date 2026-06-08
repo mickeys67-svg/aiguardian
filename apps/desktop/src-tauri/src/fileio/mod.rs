@@ -16,7 +16,10 @@ pub struct FileWriteResult {
 
 fn resolve_safe_path(input: &str) -> Result<PathBuf, String> {
     // ~ 확장
-    let expanded = if let Some(rest) = input.strip_prefix("~/").or_else(|| input.strip_prefix("~\\")) {
+    let expanded = if let Some(rest) = input
+        .strip_prefix("~/")
+        .or_else(|| input.strip_prefix("~\\"))
+    {
         let home = dirs::home_dir().ok_or_else(|| "홈 디렉토리를 찾지 못했어요.".to_string())?;
         home.join(rest)
     } else if input == "~" {
@@ -72,7 +75,7 @@ pub fn write_file(path: String, contents: String) -> Result<FileWriteResult, Str
     if let Some(parent) = resolved.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("폴더 생성 실패: {e}"))?;
     }
-    let bytes = contents.as_bytes().len();
+    let bytes = contents.len();
     fs::write(&resolved, contents).map_err(|e| format!("파일 쓰기 실패: {e}"))?;
     Ok(FileWriteResult {
         path: resolved.to_string_lossy().to_string(),
