@@ -20,7 +20,7 @@
     "demo:mcp": "node src/adapters/mcp/server.ts --demo",
     "lint": "echo \"(coach) lint TBD\"",
     "typecheck": "tsc --noEmit",
-    "test": "node src/adapters/claude-code/stop-hook.ts --demo"
+    "test": "node --test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",

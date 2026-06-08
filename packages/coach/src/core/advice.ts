@@ -129,11 +129,13 @@ export function buildAdvice(t: TurnSummary, opts: AdviceOptions = {}): AdviceBuc
     buckets.push({ key: "missed", icon: "💡", title: "초보자가 자주 놓쳐요", items: missed });
   }
 
-  // ⑤ 다음엔 이렇게 (direction)
-  const next: AdviceItem = t.hadError
-    ? text('에러가 있었다면, 다음 프롬프트로 그 에러 메시지를 그대로 붙여넣고 "이 에러 고쳐줘"라고 해보세요.')
-    : text('한 번에 크게 바꾸기보다, 작은 단위로 요청하면 따라가기 쉬워요. 예: "방금 만든 화면에 버튼 하나만 추가해줘".');
-  buckets.push({ key: "next", icon: "➡️", title: "다음엔 이렇게 해보세요", items: [next] });
+  // ⑤ 다음엔 이렇게 (direction) — 뭔가 일어난 턴에만. 빈 턴(채팅만)이면 조언 없음.
+  if (buckets.length > 0) {
+    const next: AdviceItem = t.hadError
+      ? text('에러가 있었다면, 다음 프롬프트로 그 에러 메시지를 그대로 붙여넣고 "이 에러 고쳐줘"라고 해보세요.')
+      : text('한 번에 크게 바꾸기보다, 작은 단위로 요청하면 따라가기 쉬워요. 예: "방금 만든 화면에 버튼 하나만 추가해줘".');
+    buckets.push({ key: "next", icon: "➡️", title: "다음엔 이렇게 해보세요", items: [next] });
+  }
 
   return buckets;
 }
