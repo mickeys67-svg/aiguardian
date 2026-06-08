@@ -35,6 +35,9 @@ importers:
       '@tauri-apps/plugin-shell':
         specifier: ^2.0.1
         version: 2.3.5
+      '@tg/coach':
+        specifier: workspace:*
+        version: link:../../packages/coach
       '@tg/tip-engine':
         specifier: workspace:*
         version: link:../../packages/tip-engine

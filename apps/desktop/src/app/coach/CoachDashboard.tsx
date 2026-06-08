@@ -1,15 +1,16 @@
-// 코치 대시보드 (HUD) — 와이어프레임. (ADR-0004, 옵션 B 대시보드형)
+// 코치 대시보드 (HUD). (ADR-0004, 옵션 B 대시보드형)
 //
 // 정체성: 우리는 IDE도 채팅도 터미널도 아니다. "AI 옆에서 흐름을 짚어주는 코치"다.
-// 불변식(stance-lint 강제):
-//   - 코드 에디터 없음
-//   - AI 채팅 입력창 없음
-//   - 명령은 "복사" 버튼만, "실행" 버튼 없음 (user-runs, app-coaches)
+// 불변식(stance-lint 강제): 코드 에디터 없음 · AI 채팅 입력창 없음 ·
+//   명령은 "복사" 버튼만, "실행" 버튼 없음 (user-runs, app-coaches).
 //
-// 지금은 샘플 데이터로 레이아웃만 그린다. 데이터 배선은 다음 단계:
-// @tg/coach 코어(능동=Stop 훅 / 수동=MCP)가 만든 5버킷 조언을 이 화면에 흘려보낸다.
+// 데이터: @tg/coach 코어의 buildAdvice() 가 만든 구조화 조언을 그대로 렌더한다.
+// 지금은 샘플 TurnSummary 로 엔진을 돌린다. 다음 단계: Stop 훅/MCP 가 보낸 실제 턴으로 교체.
 
 import { useState } from "react";
+import { buildAdvice } from "@tg/coach/core";
+import type { AdviceBucket, AdviceKey, TurnSummary } from "@tg/coach/core";
+import { useEnvironment } from "@/lib/hooks";
 
 type Step = { id: string; label: string };
 const JOURNEY: Step[] = [
@@ -21,56 +22,18 @@ const JOURNEY: Step[] = [
 ];
 const CURRENT_STEP = "make";
 
-type Item = { kind: "text"; text: string } | { kind: "cmd"; cmd: string };
-type Bucket = { icon: string; title: string; tone: "info" | "do" | "warn" | "next"; items: Item[] };
-
-// 샘플 — 실제로는 코어의 AdviceBucket 을 받아 채운다.
-const SAMPLE: Bucket[] = [
-  {
-    icon: "📦",
-    title: "무슨 일이 일어났어요",
-    tone: "info",
-    items: [
-      { kind: "text", text: "AI가 파일 3개를 새로 만들었어요: index.html, main.js, style.css" },
-      { kind: "text", text: "명령 2개를 대신 실행했어요 (프로젝트 생성, 패키지 설치)" },
-    ],
-  },
-  {
-    icon: "👀",
-    title: "지금 확인해 보세요",
-    tone: "info",
-    items: [
-      { kind: "text", text: "AI가 만든 파일을 한 번 열어, 의도하신 내용이 맞는지 확인해 보세요." },
-      { kind: "text", text: "웹 화면 작업이에요. 브라우저에서 페이지가 뜨는지 확인해 보세요." },
-    ],
-  },
-  {
-    icon: "⌨️",
-    title: "직접 하셔야 하는 작업이에요",
-    tone: "do",
-    items: [
-      { kind: "text", text: "아래 명령은 AI가 대신 못 해요. PowerShell을 열고 이 폴더에서 직접 실행하세요." },
-      { kind: "cmd", cmd: "npm run dev" },
-    ],
-  },
-  {
-    icon: "💡",
-    title: "초보자가 자주 놓쳐요",
-    tone: "warn",
-    items: [
-      { kind: "text", text: "저장(Ctrl+S)이 됐는지, git에 커밋을 했는지 확인하세요." },
-      { kind: "text", text: "node_modules 폴더는 용량이 커도 정상이고, git에 올리지 않아도 돼요." },
-    ],
-  },
-  {
-    icon: "➡️",
-    title: "다음엔 이렇게 해보세요",
-    tone: "next",
-    items: [
-      { kind: "text", text: '작은 단위로 요청하면 따라가기 쉬워요. 예: "방금 만든 화면에 버튼 하나만 추가해줘".' },
-    ],
-  },
-];
+// 샘플 턴 — 실제로는 Stop 훅/MCP 어댑터가 보낸 TurnSummary 로 교체된다.
+const SAMPLE_TURN: TurnSummary = {
+  userPrompt: "할 일 목록 웹페이지를 만들어줘",
+  filesChanged: [
+    { path: "todo/index.html", action: "create" },
+    { path: "todo/main.js", action: "create" },
+    { path: "todo/style.css", action: "create" },
+  ],
+  commandsRun: [{ command: "cd todo && npm install", failed: false }],
+  userMustRun: ["npm run dev"],
+  hadError: false,
+};
 
 const LEARNED = [
   { term: "터미널", done: true },
@@ -80,6 +43,10 @@ const LEARNED = [
 ];
 
 export function CoachDashboard() {
+  const { data: env } = useEnvironment();
+  // 코어 엔진을 직접 돌려 구조화 조언을 얻는다(OS 는 진단 결과 사용).
+  const buckets = buildAdvice(SAMPLE_TURN, { os: env?.os ?? "windows" });
+
   return (
     <div className="max-w-3xl">
       <header className="mb-6">
@@ -96,8 +63,8 @@ export function CoachDashboard() {
           방금 한 턴
         </h2>
         <div className="space-y-3">
-          {SAMPLE.map((b) => (
-            <BucketCard key={b.title} bucket={b} />
+          {buckets.map((b) => (
+            <BucketCard key={b.key} bucket={b} />
           ))}
         </div>
       </section>
@@ -153,16 +120,17 @@ function JourneyMap() {
   );
 }
 
-const TONE_RING: Record<Bucket["tone"], string> = {
-  info: "border-subtle/15",
+const TONE_RING: Record<AdviceKey, string> = {
+  recap: "border-subtle/15",
+  verify: "border-subtle/15",
   do: "border-primary/30",
-  warn: "border-warning/40",
+  missed: "border-warning/40",
   next: "border-subtle/15",
 };
 
-function BucketCard({ bucket }: { bucket: Bucket }) {
+function BucketCard({ bucket }: { bucket: AdviceBucket }) {
   return (
-    <div className={`rounded-2xl bg-surface border p-4 ${TONE_RING[bucket.tone]}`}>
+    <div className={`rounded-2xl bg-surface border p-4 ${TONE_RING[bucket.key]}`}>
       <h3 className="text-sm font-semibold text-ink mb-2">
         <span aria-hidden className="mr-1.5">
           {bucket.icon}
@@ -177,7 +145,7 @@ function BucketCard({ bucket }: { bucket: Bucket }) {
             </li>
           ) : (
             <li key={i}>
-              <CommandRow cmd={item.cmd} />
+              <CommandRow cmd={item.command} />
             </li>
           ),
         )}

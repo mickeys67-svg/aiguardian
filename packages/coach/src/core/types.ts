@@ -15,6 +15,23 @@ export interface CommandRun {
   failed: boolean;
 }
 
+// ── 조언 출력 구조 (JSON 직렬화 가능 — 터미널·마크다운·HUD 가 모두 같은 데이터를 쓴다) ──
+
+/** 조언 한 줄. 명령은 1급 항목이라 HUD 에서 "복사" 버튼이 붙는다. */
+export type AdviceItem =
+  | { kind: "text"; text: string }
+  | { kind: "command"; command: string };
+
+/** 버킷 종류 — HUD 가 색(tone)을 매핑할 때 쓴다. */
+export type AdviceKey = "recap" | "verify" | "do" | "missed" | "next";
+
+export interface AdviceBucket {
+  key: AdviceKey;
+  icon: string;
+  title: string;
+  items: AdviceItem[];
+}
+
 /** 한 개발 턴에 무슨 일이 있었나 — 모든 어댑터가 채워 넘기는 정규화 입력. */
 export interface TurnSummary {
   /** 사용자가 이 턴을 시작하며 넣은 프롬프트 */
