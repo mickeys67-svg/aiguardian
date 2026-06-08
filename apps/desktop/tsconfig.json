@@ -4,6 +4,7 @@
     "rootDir": ".",
     "outDir": "dist",
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": ["vite/client"],
     "paths": {
       "@/*": ["src/*"]

@@ -35,6 +35,9 @@ importers:
       '@tauri-apps/plugin-shell':
         specifier: ^2.0.1
         version: 2.3.5
+      '@tg/coach':
+        specifier: workspace:*
+        version: link:../../packages/coach
       '@tg/tip-engine':
         specifier: workspace:*
         version: link:../../packages/tip-engine
@@ -93,6 +96,22 @@ importers:
       wrangler:
         specifier: ^3.86.0
         version: 3.114.17(@cloudflare/workers-types@4.20260430.1)
+
+  packages/coach:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.0.4
+        version: 1.29.0(zod@3.25.76)
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.17
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
 
   packages/mcp-server:
     dependencies:

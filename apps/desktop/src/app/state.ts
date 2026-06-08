@@ -10,7 +10,7 @@ export type OnboardingStage =
 
 export type AppMode = "onboarding" | "main";
 
-export type MainSection = "home" | "recipes" | "projects" | "learn" | "settings";
+export type MainSection = "coach" | "home" | "recipes" | "projects" | "learn" | "settings";
 
 interface AppState {
   mode: AppMode;
@@ -42,7 +42,7 @@ const initialMode: AppMode =
 export const useApp = create<AppState>((set, get) => ({
   mode: initialMode,
   stage: "welcome",
-  section: "home",
+  section: "coach",
   selectedRecipeId: null,
 
   setStage: (stage) => set({ stage }),
@@ -55,7 +55,7 @@ export const useApp = create<AppState>((set, get) => ({
   },
   finishOnboarding: () => {
     localStorage.setItem(STORAGE_KEY, "main");
-    set({ mode: "main", section: "home" });
+    set({ mode: "main", section: "coach" });
   },
   setSection: (section) => set({ section }),
   selectRecipe: (id) => set({ selectedRecipeId: id }),
