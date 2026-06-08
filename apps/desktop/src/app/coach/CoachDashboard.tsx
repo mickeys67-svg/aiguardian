@@ -8,9 +8,29 @@
 // 지금은 샘플 TurnSummary 로 엔진을 돌린다. 다음 단계: Stop 훅/MCP 가 보낸 실제 턴으로 교체.
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { homeDir } from "@tauri-apps/api/path";
 import { buildAdvice } from "@tg/coach/core";
 import type { AdviceBucket, AdviceKey, TurnSummary } from "@tg/coach/core";
 import { useEnvironment } from "@/lib/hooks";
+import { readFile } from "@/lib/tauri";
+
+interface CoachState {
+  updatedAt: string;
+  source: string;
+  buckets: AdviceBucket[];
+}
+
+// 능동 어댑터(Stop/Cursor 훅)가 쓴 상태 파일을 읽는다. 없으면 null → 예시로 폴백.
+async function readCoachState(): Promise<CoachState | null> {
+  try {
+    const home = (await homeDir()).replace(/[\\/]+$/, "");
+    const raw = await readFile(`${home}/.tg-coach/latest-turn.json`);
+    return JSON.parse(raw) as CoachState;
+  } catch {
+    return null;
+  }
+}
 
 type Step = { id: string; label: string };
 const JOURNEY: Step[] = [
@@ -44,8 +64,15 @@ const LEARNED = [
 
 export function CoachDashboard() {
   const { data: env } = useEnvironment();
-  // 코어 엔진을 직접 돌려 구조화 조언을 얻는다(OS 는 진단 결과 사용).
-  const buckets = buildAdvice(SAMPLE_TURN, { os: env?.os ?? "windows" });
+  // 훅이 보낸 라이브 조언을 2초마다 폴링. 있으면 그걸, 없으면 예시 엔진 출력.
+  const { data: live } = useQuery({
+    queryKey: ["coach-state"],
+    queryFn: readCoachState,
+    refetchInterval: 2000,
+  });
+
+  const isLive = !!live;
+  const buckets = live?.buckets ?? buildAdvice(SAMPLE_TURN, { os: env?.os ?? "windows" });
 
   return (
     <div className="max-w-3xl">
@@ -59,9 +86,16 @@ export function CoachDashboard() {
       <JourneyMap />
 
       <section className="mb-6">
-        <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
-          방금 한 턴
-        </h2>
+        <div className="flex items-center justify-between mb-2 px-1">
+          <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide">
+            방금 한 턴
+          </h2>
+          {isLive ? (
+            <span className="text-[11px] text-success">🟢 라이브 · {live!.source}</span>
+          ) : (
+            <span className="text-[11px] text-subtle">예시 (아직 받은 턴 없음)</span>
+          )}
+        </div>
         <div className="space-y-3">
           {buckets.map((b) => (
             <BucketCard key={b.key} bucket={b} />

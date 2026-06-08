@@ -17,14 +17,18 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { summarizeLastTurn } from "../../shared/transcript.ts";
-import { adviseOnTurn } from "../../core/index.ts";
+import { buildAdvice, renderAdvice } from "../../core/index.ts";
+import { writeCoachState } from "../../shared/state.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
 function adviseFromTranscript(jsonl: string): string | null {
   const summary = summarizeLastTurn(jsonl);
   if (!summary) return null;
-  return adviseOnTurn(summary);
+  const buckets = buildAdvice(summary);
+  if (!buckets.length) return null;
+  writeCoachState(buckets, "cursor"); // HUD 로 라이브 전송
+  return renderAdvice(buckets);
 }
 
 /** Cursor 훅 입력에서 transcript 파일 경로를 꺼낸다(여러 후보 키를 방어적으로). */

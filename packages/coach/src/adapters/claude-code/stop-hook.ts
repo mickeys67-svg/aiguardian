@@ -17,15 +17,19 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { summarizeLastTurn } from "./transcript.ts";
-import { adviseOnTurn } from "../../core/index.ts";
+import { buildAdvice, renderAdvice } from "../../core/index.ts";
+import { writeCoachState } from "../../shared/state.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-/** transcript 텍스트 → 렌더된 조언 문자열(조언 없으면 null). */
+/** transcript 텍스트 → 렌더된 조언 문자열(조언 없으면 null). 동시에 HUD 용 상태 파일도 기록. */
 function adviseFromTranscript(jsonl: string): string | null {
   const summary = summarizeLastTurn(jsonl);
   if (!summary) return null;
-  return adviseOnTurn(summary);
+  const buckets = buildAdvice(summary);
+  if (!buckets.length) return null;
+  writeCoachState(buckets, "claude-code"); // HUD 로 라이브 전송
+  return renderAdvice(buckets);
 }
 
 function runDemo(): void {
