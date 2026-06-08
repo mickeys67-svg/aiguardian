@@ -75,7 +75,7 @@ pub fn write_file(path: String, contents: String) -> Result<FileWriteResult, Str
     if let Some(parent) = resolved.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("폴더 생성 실패: {e}"))?;
     }
-    let bytes = contents.as_bytes().len();
+    let bytes = contents.len();
     fs::write(&resolved, contents).map_err(|e| format!("파일 쓰기 실패: {e}"))?;
     Ok(FileWriteResult {
         path: resolved.to_string_lossy().to_string(),
