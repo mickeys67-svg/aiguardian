@@ -10,7 +10,7 @@ export type OnboardingStage =
 
 export type AppMode = "onboarding" | "main";
 
-export type MainSection = "home" | "recipes" | "projects" | "learn" | "settings";
+export type MainSection = "coach" | "home" | "recipes" | "projects" | "learn" | "settings";
 
 interface AppState {
   mode: AppMode;

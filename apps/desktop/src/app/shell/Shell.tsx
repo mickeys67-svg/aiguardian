@@ -1,5 +1,6 @@
 import { useApp } from "../state";
 import { Sidebar } from "./Sidebar";
+import { CoachDashboard } from "../coach/CoachDashboard";
 import { Home } from "../sections/Home";
 import { RecipesSection } from "../sections/RecipesSection";
 import { Projects } from "../sections/Projects";
@@ -14,6 +15,7 @@ export function Shell() {
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="px-10 py-10">
+          {section === "coach" && <CoachDashboard />}
           {section === "home" && <Home />}
           {section === "recipes" && <RecipesSection />}
           {section === "projects" && <Projects />}

@@ -1,6 +1,7 @@
 import { useApp, type MainSection } from "../state";
 
 const ITEMS: Array<{ id: MainSection; label: string; icon: string }> = [
+  { id: "coach", label: "코치", icon: "🧭" },
   { id: "home", label: "홈", icon: "🏠" },
   { id: "recipes", label: "레시피", icon: "📖" },
   { id: "projects", label: "프로젝트", icon: "📁" },
