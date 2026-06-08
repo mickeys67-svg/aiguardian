@@ -14,6 +14,7 @@ import { buildAdvice } from "@tg/coach/core";
 import type { AdviceBucket, AdviceKey, TurnSummary } from "@tg/coach/core";
 import { useEnvironment } from "@/lib/hooks";
 import { readFile } from "@/lib/tauri";
+import { CoachConnect } from "./CoachConnect";
 
 interface CoachState {
   updatedAt: string;
@@ -82,6 +83,8 @@ export function CoachDashboard() {
           AI 옆에서 흐름을 짚어드려요. 직접 만들지도, 대신 실행하지도 않아요.
         </p>
       </header>
+
+      <CoachConnect />
 
       <JourneyMap />
 
