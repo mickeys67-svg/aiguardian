@@ -16,7 +16,7 @@ export function coachStatePath(): string {
 
 export interface CoachState {
   updatedAt: string;
-  source: string; // 어느 어댑터가 썼나 (claude-code / cursor)
+  source: string; // 어느 어댑터가 썼나 (claude-code / cursor / claude-desktop)
   buckets: AdviceBucket[];
 }
 

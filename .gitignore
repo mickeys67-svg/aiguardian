@@ -50,5 +50,8 @@ pnpm-debug.log*
 .dev.vars
 packages/mcp-server/dist/
 
+# 코치 번들 복사본 (빌드 시 packages/coach/dist 에서 동기화)
+apps/desktop/src-tauri/resources/
+
 # Claude Code worktrees
 .claude/worktrees/

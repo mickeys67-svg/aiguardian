@@ -16,6 +16,8 @@
     "tg-coach-mcp": "./src/adapters/mcp/server.ts"
   },
   "scripts": {
+    "build": "node build.mjs",
+    "pack:mcpb": "node pack-mcpb.mjs",
     "demo": "node src/adapters/claude-code/stop-hook.ts --demo",
     "demo:cursor": "node src/adapters/cursor/stop-hook.ts --demo",
     "demo:mcp": "node src/adapters/mcp/server.ts --demo",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "esbuild": "^0.21.5",
     "typescript": "^5.6.3"
   }
 }

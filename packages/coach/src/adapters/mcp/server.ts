@@ -13,7 +13,8 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { runCoachReview, type CoachReviewInput } from "./coach-review.ts";
+import { reviewTurn, runCoachReview, type CoachReviewInput } from "./coach-review.ts";
+import { writeCoachState } from "../../shared/state.ts";
 
 const InputSchema = z.object({
   userPrompt: z.string().optional(),
@@ -92,7 +93,11 @@ export async function runServer(): Promise<void> {
       };
     }
     const input = InputSchema.parse(req.params.arguments ?? {}) as CoachReviewInput;
-    return { content: [{ type: "text", text: runCoachReview(input) }] };
+    const { buckets, text } = reviewTurn(input);
+    // 데스크탑 Claude 처럼 훅이 없는 클라에서도 앱 HUD 가 라이브로 켜지도록 상태파일 기록.
+    // (실패해도 조용히 무시 — 도구 응답 자체는 그대로 나간다.)
+    if (buckets.length) writeCoachState(buckets, "claude-desktop");
+    return { content: [{ type: "text", text }] };
   });
 
   const transport = new StdioServerTransport();
