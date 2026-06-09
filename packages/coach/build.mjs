@@ -21,6 +21,7 @@ const common = {
 
 const entries = [
   { in: "src/adapters/claude-code/stop-hook.ts", out: "dist/tg-coach-stop.mjs" },
+  { in: "src/adapters/cursor/stop-hook.ts", out: "dist/tg-coach-cursor.mjs" },
   { in: "src/adapters/mcp/server.ts", out: "dist/tg-coach-mcp.mjs" },
 ];
 

@@ -5,13 +5,16 @@
 
 ## 설치 (한 번만)
 
-1. 코치 확장을 만든다(릴리스에 포함 예정):
-   ```bash
-   pnpm --filter @tg/coach build      # 자립형 .mjs 번들
-   pnpm --filter @tg/coach pack:mcpb  # dist/mcpb-stage 조립
-   npx @anthropic-ai/mcpb pack packages/coach/dist/mcpb-stage packages/coach/dist/tg-coach.mcpb
-   ```
-2. 데스크탑 Claude → **설정 → 확장(Extensions)** → `tg-coach.mcpb` 열기 → 설치.
+**입문자**: 릴리스 자산에서 `tg-coach.mcpb` 를 받아(릴리스 워크플로가 자동 첨부) →
+데스크탑 Claude **설정 → 확장(Extensions)** → 파일 열기 → 설치. 끝.
+> Node.js 는 데스크탑 Claude(mac/win)에 동봉돼 있어 **따로 설치할 필요 없다**.
+
+**개발자**(소스에서 직접 만들기):
+```bash
+pnpm --filter @tg/coach build      # 자립형 .mjs 번들
+pnpm --filter @tg/coach pack:mcpb  # dist/mcpb-stage 조립
+npx @anthropic-ai/mcpb pack packages/coach/dist/mcpb-stage packages/coach/dist/tg-coach.mcpb
+```
 
 ## 쓰는 법
 

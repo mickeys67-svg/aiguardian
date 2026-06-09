@@ -115,9 +115,13 @@ function JourneyMap() {
   const currentIdx = JOURNEY.findIndex((s) => s.id === CURRENT_STEP);
   return (
     <section className="mb-6 rounded-2xl bg-surface border border-subtle/15 p-4">
-      <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide mb-3">
-        지금 어디쯤이에요
-      </h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide">
+          지금 어디쯤이에요
+        </h2>
+        {/* 진척 추적이 아직 없어 고정 예시다 — 라이브는 "방금 한 턴"뿐. 진짜처럼 오해 막기. */}
+        <span className="text-[11px] text-subtle">예시</span>
+      </div>
       <ol className="flex items-center gap-2">
         {JOURNEY.map((s, i) => {
           const state = i < currentIdx ? "done" : i === currentIdx ? "now" : "todo";
@@ -221,9 +225,13 @@ function LearnedPanel() {
   const done = LEARNED.filter((l) => l.done).length;
   return (
     <section className="mb-6">
-      <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
-        배운 것 ({done}/{LEARNED.length})
-      </h2>
+      <div className="flex items-center justify-between mb-2 px-1">
+        <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide">
+          배운 것 ({done}/{LEARNED.length})
+        </h2>
+        {/* 고정 예시 — 실제 학습 추적은 후속. (mock-scan 정직성) */}
+        <span className="text-[11px] text-subtle">예시</span>
+      </div>
       <div className="rounded-2xl bg-surface border border-subtle/15 p-4 flex flex-wrap gap-2">
         {LEARNED.map((l) => (
           <span
