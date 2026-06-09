@@ -7,22 +7,13 @@
 import { mkdirSync, writeFileSync, readFileSync, renameSync, rmSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, dirname } from "node:path";
-import type { AdviceBucket } from "../core/types.ts";
+import type { AdviceBucket, CoachState, CoachPhase } from "../core/types.ts";
+
+export type { CoachState, CoachPhase } from "../core/types.ts";
 
 /** 상태 파일 절대경로. Rust readFile 쪽도 같은 경로를 읽는다(~/.tg-coach/latest-turn.json). */
 export function coachStatePath(): string {
   return join(homedir(), ".tg-coach", "latest-turn.json");
-}
-
-/** 한 턴 코칭의 단계. facts=훅이 즉시(사실), enriched=세션 AI가 맥락으로 덧칠(격려·아이디어). */
-export type CoachPhase = "facts" | "enriched";
-
-export interface CoachState {
-  updatedAt: string;
-  source: string; // 어느 어댑터가 썼나 (claude-code / cursor / claude-desktop)
-  buckets: AdviceBucket[];
-  phase?: CoachPhase;
-  locale?: string;
 }
 
 export interface WriteOpts {
@@ -54,11 +45,10 @@ export function writeCoachState(buckets: AdviceBucket[], source: string, opts: W
     const phase = opts.phase ?? "facts";
     if (phase === "facts") {
       const prev = readState(p);
-      if (
-        prev?.phase === "enriched" &&
-        Date.now() - Date.parse(prev.updatedAt) < SAME_TURN_MS
-      ) {
-        return; // 최근 enriched 를 facts 로 강등하지 않는다
+      if (prev?.phase === "enriched") {
+        const age = Date.now() - Date.parse(prev.updatedAt);
+        // 최근 enriched 면 facts 로 강등하지 않는다. updatedAt 손상(NaN)이면 fail-safe 로 보호.
+        if (Number.isNaN(age) || age < SAME_TURN_MS) return;
       }
     }
 

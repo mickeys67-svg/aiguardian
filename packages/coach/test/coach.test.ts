@@ -213,3 +213,5 @@ test("deleteCoachState 가 상태 파일을 폐기한다(끄기 시 잔류 제�
   deleteCoachState();
   assert.throws(() => readFileSync(coachStatePath(), "utf8")); // 파일 없음
 });
+
+// (부스터 결정 로직은 ADR-0004 스탠스 위반으로 제거됨 — 자호출률은 캡처로 실측 후 재검토.)

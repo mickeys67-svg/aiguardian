@@ -44,6 +44,20 @@ export interface DerivedAdvice {
   ideas?: string[];
 }
 
+// ── HUD 라이브 채널 상태 (훅/MCP 가 쓰고 HUD 가 읽는 파일의 모양) ──
+// 순수 타입이라 node(state.ts)·browser(HUD) 가 같은 정의를 공유한다(중복 정의 금지).
+
+/** 한 턴 코칭의 단계. facts=훅이 즉시(사실), enriched=세션 AI가 맥락으로 덧칠(격려·아이디어). */
+export type CoachPhase = "facts" | "enriched";
+
+export interface CoachState {
+  updatedAt: string;
+  source: string; // 어느 어댑터가 썼나 (claude-code / cursor / claude-desktop)
+  buckets: AdviceBucket[];
+  phase?: CoachPhase;
+  locale?: string;
+}
+
 /** 한 개발 턴에 무슨 일이 있었나 — 모든 어댑터가 채워 넘기는 정규화 입력. */
 export interface TurnSummary {
   /** 사용자가 이 턴을 시작하며 넣은 프롬프트 */

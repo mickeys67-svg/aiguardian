@@ -11,6 +11,7 @@ import {
   coachStopCommand,
   addCoachMcpServer,
   removeCoachMcpServer,
+  hasCoachMcpServer,
 } from "@tg/coach/install";
 import { readFile, writeFile } from "./tauri";
 
@@ -37,9 +38,17 @@ function parse(raw: string): Record<string, unknown> {
   }
 }
 
-/** 현재 코치가 켜져 있나(Claude Code Stop 훅 기준). */
+/** 현재 코치가 켜져 있나(Claude Code Stop 훅 기준 = 기본 on/off). */
 export async function coachInstalled(): Promise<boolean> {
   return hasCoachStopHook(parse(await readRaw(await settingsPath())));
+}
+
+/**
+ * coach MCP 서버가 settings.json 에 '실제로 등록'돼 있나(라이브 번들 경로 존재가 아니라).
+ * 이게 true 라야 세션 AI가 coach_review 를 불러 맞춤 격려·아이디어를 채울 수 있다.
+ */
+export async function coachMcpInstalled(): Promise<boolean> {
+  return hasCoachMcpServer(parse(await readRaw(await settingsPath())));
 }
 
 /**

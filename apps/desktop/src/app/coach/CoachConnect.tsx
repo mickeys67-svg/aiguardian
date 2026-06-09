@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { resolveResource } from "@tauri-apps/api/path";
-import { coachInstalled, installCoach, uninstallCoach } from "@/lib/coachInstall";
+import { coachInstalled, coachMcpInstalled, installCoach, uninstallCoach } from "@/lib/coachInstall";
 
 // 번들 리소스 경로 해석: 1) localStorage 오버라이드(개발용) 2) 앱 번들 리소스(릴리스).
 async function resolveBundled(overrideKey: string, resource: string): Promise<string | null> {
@@ -43,14 +43,23 @@ export function CoachConnect() {
     queryKey: ["coach-installed"],
     queryFn: coachInstalled,
   });
+  // 훅과 별개로 'coach MCP 가 settings.json 에 실제 등록됐나' — 맞춤 코칭(2박자)의 진짜 조건.
+  const { data: mcpInstalled } = useQuery({
+    queryKey: ["coach-mcp-installed"],
+    queryFn: coachMcpInstalled,
+  });
+
+  // 훅은 켜졌는데 MCP 가 안 붙은 상태에서 번들이 생기면 '맞춤 코칭'을 더할 수 있다(업그레이드).
+  const needsMcpUpgrade = !!installed && !mcpInstalled && !!mcpPath;
 
   const toggle = async () => {
     setBusy(true);
     setError(null);
     try {
-      if (installed) await uninstallCoach();
-      else if (scriptPath) await installCoach(scriptPath, mcpPath);
+      if (installed && !needsMcpUpgrade) await uninstallCoach();
+      else if (scriptPath) await installCoach(scriptPath, mcpPath); // 신규 설치 또는 MCP 추가
       await qc.invalidateQueries({ queryKey: ["coach-installed"] });
+      await qc.invalidateQueries({ queryKey: ["coach-mcp-installed"] });
     } catch (e) {
       setError(typeof e === "string" ? e : (e as Error).message);
     } finally {
@@ -59,6 +68,13 @@ export function CoachConnect() {
   };
 
   const ready = installed || scriptPath;
+  const buttonLabel = busy
+    ? "처리 중..."
+    : !installed
+      ? "코치 켜기"
+      : needsMcpUpgrade
+        ? "맞춤 코칭 켜기"
+        : "코치 끄기";
 
   return (
     <section className="mb-6 rounded-2xl bg-surface border border-subtle/15 p-4">
@@ -67,9 +83,11 @@ export function CoachConnect() {
           <h2 className="text-sm font-semibold text-ink mb-0.5">코치 연결</h2>
           <p className="text-xs text-subtle">
             {installed
-              ? mcpPath
-                ? "✅ 켜짐 · 한 턴을 끝낼 때마다 코치가 짚어주고, 잘된 경우엔 격려와 다음 선택지도 채워줘요."
-                : "✅ 켜짐(기본) · 사실 안내는 떠요. 맞춤 격려·아이디어는 MCP 번들 후 켜져요."
+              ? mcpInstalled
+                ? "✅ 켜짐 · 한 턴을 끝낼 때마다 코치가 사실을 짚어주고, 쓰시는 AI가 격려·다음 선택지를 채워줘요."
+                : needsMcpUpgrade
+                  ? "✅ 켜짐(기본) · 사실 안내는 떠요. ‘맞춤 코칭 켜기’를 누르면 쓰시는 AI가 격려·아이디어도 채워줘요."
+                  : "✅ 켜짐(기본) · 사실 안내는 떠요. 맞춤 격려·아이디어는 MCP 번들 후 켜져요."
               : "Claude Code 에 코치를 붙여요. 설정 파일은 앱이 알아서 써드려요."}
           </p>
         </div>
@@ -78,12 +96,12 @@ export function CoachConnect() {
           onClick={toggle}
           disabled={busy || !ready}
           className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-medium transition disabled:opacity-50 ${
-            installed
+            installed && !needsMcpUpgrade
               ? "bg-bg text-subtle border border-subtle/20 hover:text-ink"
               : "bg-primary text-white hover:opacity-90"
           }`}
         >
-          {busy ? "처리 중..." : installed ? "코치 끄기" : "코치 켜기"}
+          {buttonLabel}
         </button>
       </div>
 

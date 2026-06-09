@@ -8,11 +8,6 @@
 // 실행: node build.mjs   (= pnpm --filter @tg/coach build)
 
 import { build } from "esbuild";
-import { copyFileSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const here = dirname(fileURLToPath(import.meta.url));
 
 const common = {
   bundle: true,
@@ -35,14 +30,4 @@ for (const e of entries) {
 }
 
 console.log(`✓ 번들 완료: ${entries.map((e) => e.out).join(", ")}`);
-
-// Tauri 리소스로 들어가는 번들을 desktop 앱에 동기화(수동 복사 stale 방지).
-// 데스크탑 앱이 resolveResource("coach/...")로 읽는 stop 훅 + coach MCP 서버 둘 다.
-const RES_DIR = join(here, "..", "..", "apps", "desktop", "src-tauri", "resources", "coach");
-const RES_SYNC = ["dist/tg-coach-stop.mjs", "dist/tg-coach-mcp.mjs"];
-mkdirSync(RES_DIR, { recursive: true });
-for (const rel of RES_SYNC) {
-  const dest = join(RES_DIR, rel.split("/").pop());
-  copyFileSync(join(here, rel), dest);
-}
-console.log(`✓ 리소스 동기화: ${RES_DIR}`);
+// 주: Tauri 리소스 복사는 데스크탑이 소유한다(apps/desktop/scripts/sync-coach-resource.mjs).

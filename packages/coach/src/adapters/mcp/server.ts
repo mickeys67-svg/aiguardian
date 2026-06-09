@@ -119,13 +119,27 @@ export async function runServer(): Promise<void> {
         content: [{ type: "text", text: `알 수 없는 도구: ${req.params.name}` }],
       };
     }
-    const input = InputSchema.parse(req.params.arguments ?? {}) as CoachReviewInput;
+    // 잘못된 인자가 와도 서버가 크래시하면 안 된다(enriched 통로가 통째로 죽음). 친절히 거절.
+    let input: CoachReviewInput;
+    try {
+      input = InputSchema.parse(req.params.arguments ?? {}) as CoachReviewInput;
+    } catch (err) {
+      console.error("[tg-coach] 잘못된 coach_review 인자:", err);
+      return {
+        isError: true,
+        content: [{ type: "text", text: "코치 입력 형식이 올바르지 않아요. 인자를 확인해 다시 호출해 주세요." }],
+      };
+    }
+
     const { buckets, text } = reviewTurn(input);
     // 데스크탑 Claude 처럼 훅이 없는 클라에서도 앱 HUD 가 라이브로 켜지도록 상태파일 기록.
     // 격려·아이디어를 모델이 써 넘긴 경우 2박자(enriched) — facts 가 이걸 덮지 않도록 표시.
     // (실패해도 조용히 무시 — 도구 응답 자체는 그대로 나간다.)
     if (buckets.length) {
-      const phase = input.encouragement || input.ideas?.length ? "enriched" : "facts";
+      // phase 는 RAW 입력이 아니라 'sanitize 통과 후 실제 살아남은 버킷'으로 판정한다.
+      // ideas 버킷은 도출분만 만든다(규칙 폴백 없음) → 그 존재가 곧 enriched 의 신뢰 신호.
+      // (가드레일이 격려·아이디어를 전부 걸러냈는데 enriched 로 오라벨해 facts 를 막는 사고 방지.)
+      const phase = buckets.some((b) => b.key === "ideas") ? "enriched" : "facts";
       writeCoachState(buckets, "claude-desktop", { phase, locale: input.locale });
     }
     return { content: [{ type: "text", text }] };
