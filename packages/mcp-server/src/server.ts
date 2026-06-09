@@ -60,8 +60,7 @@ async function scan(): Promise<Record<string, unknown>> {
   const versions: Record<string, string | null> = {};
   for (const t of tools) {
     try {
-      // stance-lint-allow: read-only 버전 탐지(진단), 사용자 빌드 실행 아님
-      const { stdout } = await execP(`${t} --version`, { timeout: 3000 });
+      const { stdout } = await execP(`${t} --version`, { timeout: 3000 }); // stance-lint-allow: read-only 버전 탐지(진단)
       versions[t] = stdout.trim();
     } catch {
       versions[t] = null;

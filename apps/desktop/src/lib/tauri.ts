@@ -28,28 +28,7 @@ export async function inspectEnvironment(force = false): Promise<Environment> {
   return invoke<Environment>("inspect_environment", { force });
 }
 
-export type DryRun = {
-  command: string;
-  explanation: string;
-  blocked: boolean;
-  blockReason: string | null;
-};
-
-export async function dryRun(command: string): Promise<DryRun> {
-  return invoke<DryRun>("dry_run", { command });
-}
-
-export type InstallResult = {
-  tool: string;
-  success: boolean;
-  stdout: string;
-  stderr: string;
-  commandUsed: string;
-};
-
-export async function installTool(tool: string): Promise<InstallResult> {
-  return invoke<InstallResult>("install_tool", { tool });
-}
+// 앱은 명령을 대신 실행하지 않는다(ADR-0004) — 옛 dryRun/installTool 래퍼는 제거됨.
 
 export type McpStatus = {
   client: "claude_desktop" | "claude_code" | "cursor";
@@ -97,30 +76,8 @@ export type Recipe = {
   featured: boolean;
 };
 
-export type StepRunResult = {
-  stepId: string;
-  success: boolean;
-  stdout: string;
-  stderr: string;
-  blocked: boolean;
-};
-
 export async function listRecipes(): Promise<Recipe[]> {
   return invoke<Recipe[]>("list_recipes");
-}
-
-export async function runRecipeStep(
-  stepId: string,
-  command: string,
-  windowsCommand: string | null = null,
-  dry = false,
-): Promise<StepRunResult> {
-  return invoke<StepRunResult>("run_recipe_step", {
-    stepId,
-    command,
-    windowsCommand,
-    dry,
-  });
 }
 
 export type LearningProgress = {

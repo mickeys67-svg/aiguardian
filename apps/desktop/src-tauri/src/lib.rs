@@ -1,10 +1,8 @@
 mod fileio;
 mod inspector;
-mod installer;
 mod learning;
 mod mcp;
 mod recipes;
-mod safety;
 mod storage;
 
 use tracing_subscriber::EnvFilter;
@@ -46,12 +44,9 @@ pub fn run() {
     builder
         .invoke_handler(tauri::generate_handler![
             inspector::inspect_environment,
-            installer::install_tool,
-            installer::dry_run,
             mcp::register_mcp,
             mcp::check_mcp,
             recipes::list_recipes,
-            recipes::run_recipe_step,
             learning::track_term,
             learning::learning_progress,
             fileio::write_file,
