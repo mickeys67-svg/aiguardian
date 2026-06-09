@@ -133,24 +133,23 @@ export function buildUpdaterResponse(
   release: GhRelease,
   target: "darwin-aarch64" | "darwin-x86_64" | "windows-x86_64" | "linux-x86_64",
 ): UpdaterResponse | null {
+  // Tauri v2 산출물 기준: mac=universal.app.tar.gz, win=-setup.exe, linux=.AppImage (각 .sig 동봉).
   const lookup: Record<typeof target, { ext: string; matcher: (n: string) => boolean }> = {
     "darwin-aarch64": {
       ext: ".app.tar.gz",
-      matcher: (n) =>
-        n.toLowerCase().includes("aarch64") && n.toLowerCase().endsWith(".app.tar.gz"),
+      matcher: (n) => n.toLowerCase().endsWith(".app.tar.gz"),
     },
     "darwin-x86_64": {
       ext: ".app.tar.gz",
-      matcher: (n) =>
-        n.toLowerCase().includes("x64") && n.toLowerCase().endsWith(".app.tar.gz"),
+      matcher: (n) => n.toLowerCase().endsWith(".app.tar.gz"),
     },
     "windows-x86_64": {
-      ext: ".nsis.zip",
-      matcher: (n) => n.toLowerCase().endsWith(".nsis.zip"),
+      ext: "-setup.exe",
+      matcher: (n) => n.toLowerCase().endsWith("-setup.exe"),
     },
     "linux-x86_64": {
-      ext: ".appimage.tar.gz",
-      matcher: (n) => n.toLowerCase().endsWith(".appimage.tar.gz"),
+      ext: ".appimage",
+      matcher: (n) => n.toLowerCase().endsWith(".appimage"),
     },
   };
 
