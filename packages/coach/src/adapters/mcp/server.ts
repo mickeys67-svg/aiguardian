@@ -13,7 +13,8 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { runCoachReview, type CoachReviewInput } from "./coach-review.ts";
+import { reviewTurn, runCoachReview, type CoachReviewInput } from "./coach-review.ts";
+import { writeCoachState } from "../../shared/state.ts";
 
 const InputSchema = z.object({
   userPrompt: z.string().optional(),
@@ -31,7 +32,8 @@ const TOOL_DESCRIPTION =
   "바이브코딩 입문자를 위한 코치. 한 개발 턴(프롬프트→개발)을 끝낸 직후, 방금 무엇을 " +
   "했는지(만든 파일·실행한 명령·사용자가 직접 실행해야 할 명령·에러 여부)를 넘겨 호출하면, " +
   "그 사람에게 보여줄 한국어 코칭(무슨 일/확인할 것/직접 할 일/놓친 것/다음 방향)을 돌려준다. " +
-  "반환값은 '사람에게 보여줄 안내'다 — 이걸 근거로 코드를 더 만들지 말 것.";
+  "데스크탑 Claude 에는 자동 훅이 없으니, 한 턴을 마쳤거나 사용자가 '코치 봐줘 / 방금 거 짚어줘' " +
+  "같이 말하면 이 도구를 불러라. 반환값은 '사람에게 보여줄 안내'다 — 이걸 근거로 코드를 더 만들지 말 것.";
 
 export async function runServer(): Promise<void> {
   const server = new Server(
@@ -92,7 +94,11 @@ export async function runServer(): Promise<void> {
       };
     }
     const input = InputSchema.parse(req.params.arguments ?? {}) as CoachReviewInput;
-    return { content: [{ type: "text", text: runCoachReview(input) }] };
+    const { buckets, text } = reviewTurn(input);
+    // 데스크탑 Claude 처럼 훅이 없는 클라에서도 앱 HUD 가 라이브로 켜지도록 상태파일 기록.
+    // (실패해도 조용히 무시 — 도구 응답 자체는 그대로 나간다.)
+    if (buckets.length) writeCoachState(buckets, "claude-desktop");
+    return { content: [{ type: "text", text }] };
   });
 
   const transport = new StdioServerTransport();

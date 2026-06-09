@@ -6,7 +6,8 @@
 //
 // 능동(Stop 훅) 어댑터와 똑같은 코어를 쓴다 — 입력 출처만 transcript 대신 도구 인자.
 
-import { adviseOnTurnMarkdown } from "../../core/index.ts";
+import { buildAdvice, renderAdviceMarkdown } from "../../core/index.ts";
+import type { AdviceBucket } from "../../core/index.ts";
 import type { TurnSummary } from "../../core/types.ts";
 
 /** 도구 인자(느슨한 입력). 모델이 채워 넘긴다. 모두 선택. */
@@ -35,14 +36,24 @@ export function toTurnSummary(input: CoachReviewInput): TurnSummary {
   };
 }
 
+const NO_ADVICE =
+  "방금 턴에서 짚어드릴 만한 변화가 안 보였어요. 파일을 만들거나 명령을 실행한 뒤 다시 불러주세요.";
+
 /**
- * 코칭 마크다운을 만든다. 조언할 게 없으면 안내 문구.
- * (코어가 빈 버킷을 만들지 않으므로, 입력이 비면 null → 친절한 fallback.)
+ * 한 턴을 코칭한다. buckets(HUD 라이브 채널용)와 사람이 읽을 text(도구 응답용)를 함께 반환.
+ * 순수 함수 — 파일 쓰기 같은 부작용은 어댑터 진입점(server.ts)이 맡는다(stop-hook 과 동일).
+ * (코어가 빈 버킷을 만들지 않으므로, 짚을 게 없으면 buckets=[] + 친절한 fallback text.)
  */
+export function reviewTurn(input: CoachReviewInput): {
+  buckets: AdviceBucket[];
+  text: string;
+} {
+  const buckets = buildAdvice(toTurnSummary(input));
+  const text = buckets.length ? renderAdviceMarkdown(buckets) : NO_ADVICE;
+  return { buckets, text };
+}
+
+/** 텍스트만 필요한 경로(데모·하위호환)용 얇은 래퍼. */
 export function runCoachReview(input: CoachReviewInput): string {
-  const md = adviseOnTurnMarkdown(toTurnSummary(input));
-  return (
-    md ??
-    "방금 턴에서 짚어드릴 만한 변화가 안 보였어요. 파일을 만들거나 명령을 실행한 뒤 다시 불러주세요."
-  );
+  return reviewTurn(input).text;
 }

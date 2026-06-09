@@ -38,16 +38,9 @@ pub fn run() {
 
     #[cfg(not(debug_assertions))]
     {
-        let updater = tauri_plugin_updater::Builder::new()
-            .endpoints(vec![
-                "https://tg-backend.mickeys67.workers.dev/updates/{{target}}/{{current_version}}"
-                    .parse()
-                    .expect("valid updater URL"),
-            ])
-            .expect("updater endpoints")
-            .pubkey("dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFNDJBRUI3NTlFQTgxMDAKUldRQWdlcFp0NjVDTHZieTRPalZIN3F4bVZMNHlmbkltVmt4NUhwQ0V1RVY2NFdyeUhLWXNWV2cK")
-            .build();
-        builder = builder.plugin(updater);
+        // 엔드포인트·pubkey 는 tauri.conf.json 의 plugins.updater 에서 읽는다.
+        // (플러그인 Builder 에는 .endpoints() 가 없다 — v2.10 API. 런타임 UpdaterBuilder 와 혼동된 옛 코드.)
+        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
     }
 
     builder

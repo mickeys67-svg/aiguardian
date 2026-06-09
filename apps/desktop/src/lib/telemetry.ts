@@ -5,7 +5,11 @@
 
 const TELEMETRY_KEY = "tg.telemetry.optedIn";
 const ANON_ID_KEY = "tg.anonId";
-const BACKEND = (import.meta.env.VITE_TG_BACKEND as string | undefined) ?? "https://api.terminalguardian.kr";
+// 실 백엔드 = tg-backend Worker (updater 엔드포인트·랜딩과 동일 호스트). api.terminalguardian.kr 는 옛 스테일 값.
+// 커스텀 도메인(api.vibemate.kr)을 붙이면 VITE_TG_BACKEND 로 덮어쓰거나 이 기본값을 교체.
+const BACKEND =
+  (import.meta.env.VITE_TG_BACKEND as string | undefined) ??
+  "https://tg-backend.mickeys67.workers.dev";
 
 type EventName =
   | "tg.stage.entered"
