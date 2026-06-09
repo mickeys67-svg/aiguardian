@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "TG",
-  "version": "0.1.0",
+  "productName": "Vibemate",
+  "version": "0.3.0",
   "identifier": "kr.tg.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "TG",
+        "title": "Vibemate",
         "width": 1100,
         "height": 740,
         "minWidth": 900,
@@ -43,8 +43,8 @@
     "category": "DeveloperTool",
     "shortDescription": "바이브코딩 입문자를 위한 통합 가디언",
     "longDescription": "컴퓨터 켠 첫 순간부터 첫 앱 배포까지 끊김 없이 안내하는 데스크톱 가디언.",
-    "publisher": "TG Project",
-    "copyright": "© 2026 TG Project",
+    "publisher": "Vibemate",
+    "copyright": "© 2026 Vibemate",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

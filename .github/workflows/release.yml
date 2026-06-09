@@ -79,9 +79,9 @@ jobs:
         with:
           projectPath: apps/desktop
           tagName: ${{ github.event.inputs.version || github.ref_name }}
-          releaseName: "TG ${{ github.event.inputs.version || github.ref_name }}"
+          releaseName: "Vibemate ${{ github.event.inputs.version || github.ref_name }}"
           releaseBody: |
-            ## TG ${{ github.event.inputs.version || github.ref_name }}
+            ## Vibemate ${{ github.event.inputs.version || github.ref_name }}
 
             **다운로드**: 백엔드 `/download/{win,mac,linux}` 또는 아래 자산 직접 다운로드.
 
@@ -89,7 +89,7 @@ jobs:
 
             자세한 내용: https://vibemate.kr
           releaseDraft: false
-          prerelease: true
+          prerelease: false
           args: ${{ matrix.args }}
 
   mcpb:
