@@ -4,13 +4,10 @@
 // 이 서버는 node 단독으로 실행되어 클라이언트의 prompt → tool call 을 받는다.
 //
 // 노출 도구:
-// - tg.scan          : 환경 진단 결과 (캐시된 SQLite 읽기)
-// - tg.run_command   : Safety Net 통과한 명령 실행
-// - tg.deploy        : Cloudflare Pages 배포
+// - tg_scan : 환경 진단 (read-only). 앱이 명령을 대신 실행하지 않는다(ADR-0004) →
+//             옛 tg_run_command·tg_deploy 는 제거됨.
 
 export { runServer } from "./server.js";
 export const TOOL_NAMES = {
   scan: "tg_scan",
-  runCommand: "tg_run_command",
-  deploy: "tg_deploy",
 } as const;
