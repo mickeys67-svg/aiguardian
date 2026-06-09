@@ -139,7 +139,7 @@ fn tool(name: &str, friendly: &str) -> ToolStatus {
 }
 
 fn which_version(cmd: &str) -> Option<String> {
-    let output = Command::new(cmd).arg("--version").output().ok()?;
+    let output = Command::new(cmd).arg("--version").output().ok()?; // stance-lint-allow: read-only 버전 탐지(환경 진단)
     if !output.status.success() {
         return None;
     }
