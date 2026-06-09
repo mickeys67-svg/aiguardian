@@ -4,7 +4,7 @@
 // 실행 중인 HUD(데스크톱 앱)가 그 파일을 폴링해 화면에 띄운다.
 // MCP/원격으로 확장하기 전, 가장 단순하고 안전한 전송(파일 1개).
 
-import { mkdirSync, writeFileSync, readFileSync, renameSync, rmSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, renameSync, rmSync, appendFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, dirname } from "node:path";
 import type { AdviceBucket, CoachState, CoachPhase } from "../core/types.ts";
@@ -62,8 +62,27 @@ export function writeCoachState(buckets: AdviceBucket[], source: string, opts: W
     const tmp = `${p}.tmp`;
     writeFileSync(tmp, JSON.stringify(state, null, 2), "utf8");
     renameSync(tmp, p); // 원자적 교체 — HUD 가 반쯤 쓴 파일을 읽지 않게
+    maybeLogPhase(state); // 실측(opt-in): 자호출률 계산용 phase 이벤트 로깅
   } catch {
     /* 권한·디스크 문제로 못 써도 코칭 자체(systemMessage)는 그대로 나간다 */
+  }
+}
+
+/**
+ * 실측(opt-in, env TG_COACH_CAPTURE=1): 매 상태 쓰기를 ~/.tg-coach/phase-log.jsonl 에 한 줄 남긴다.
+ * facts(훅) 대비 enriched(세션 AI 자호출) 비율 = 자호출률. 평상시엔 기록 안 함(파일 비대 방지).
+ */
+function maybeLogPhase(state: CoachState): void {
+  if (process.env.TG_COACH_CAPTURE !== "1") return;
+  try {
+    const dir = dirname(coachStatePath());
+    appendFileSync(
+      join(dir, "phase-log.jsonl"),
+      JSON.stringify({ at: state.updatedAt, source: state.source, phase: state.phase ?? "facts" }) + "\n",
+      "utf8",
+    );
+  } catch {
+    /* 로깅 실패는 무해 */
   }
 }
 
