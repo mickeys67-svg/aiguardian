@@ -287,14 +287,12 @@ function getMatchingBundle(
   target: UpdaterTarget,
 ): string | null {
   const lower = release.assets.map((a) => a.name);
+  // Tauri v2 산출물 기준 (buildUpdaterResponse 와 동일): mac=universal.app.tar.gz, win=-setup.exe, linux=.AppImage.
   const matchers: Record<UpdaterTarget, (n: string) => boolean> = {
-    "darwin-aarch64": (n) =>
-      n.toLowerCase().includes("aarch64") &&
-      n.toLowerCase().endsWith(".app.tar.gz"),
-    "darwin-x86_64": (n) =>
-      n.toLowerCase().includes("x64") && n.toLowerCase().endsWith(".app.tar.gz"),
-    "windows-x86_64": (n) => n.toLowerCase().endsWith(".nsis.zip"),
-    "linux-x86_64": (n) => n.toLowerCase().endsWith(".appimage.tar.gz"),
+    "darwin-aarch64": (n) => n.toLowerCase().endsWith(".app.tar.gz"),
+    "darwin-x86_64": (n) => n.toLowerCase().endsWith(".app.tar.gz"),
+    "windows-x86_64": (n) => n.toLowerCase().endsWith("-setup.exe"),
+    "linux-x86_64": (n) => n.toLowerCase().endsWith(".appimage"),
   };
   return lower.find(matchers[target]) ?? null;
 }
