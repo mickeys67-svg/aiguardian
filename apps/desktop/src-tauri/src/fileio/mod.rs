@@ -109,8 +109,8 @@ mod tests {
         // 회귀: Windows canonicalize 의 `\\?\` 접두사로 홈 안 경로가 거부되던 버그.
         let home = dirs::home_dir().unwrap();
         let target = home.join(".claude").join("settings.json");
-        let resolved = resolve_safe_path(&target.to_string_lossy())
-            .expect("홈 안 경로는 허용돼야 함");
+        let resolved =
+            resolve_safe_path(&target.to_string_lossy()).expect("홈 안 경로는 허용돼야 함");
         let canon_home = home.canonicalize().unwrap();
         assert!(resolved.starts_with(&canon_home));
     }
