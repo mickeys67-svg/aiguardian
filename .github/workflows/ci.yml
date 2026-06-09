@@ -40,6 +40,17 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+      # Tauri build.rs 가 bundle.resources 의 코치 훅 존재를 컴파일 시 검증하므로 먼저 만든다.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Prepare coach resource
+        run: |
+          pnpm --filter @tg/coach build
+          node apps/desktop/scripts/sync-coach-resource.mjs
       - name: cargo fmt
         run: cargo fmt --all -- --check
       - name: cargo clippy
