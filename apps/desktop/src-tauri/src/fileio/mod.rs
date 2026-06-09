@@ -28,7 +28,12 @@ fn resolve_safe_path(input: &str) -> Result<PathBuf, String> {
         PathBuf::from(input)
     };
 
-    let home = dirs::home_dir().ok_or_else(|| "홈 디렉토리를 찾지 못했어요.".to_string())?;
+    // home 도 canonicalize 한다 — Windows 에서 canonicalize 는 `\\?\` verbatim 접두사를
+    // 붙이는데, 접두사 없는 home 과 starts_with 비교하면 홈 안 경로도 거부된다(코치 켜기 실패).
+    let home = dirs::home_dir()
+        .ok_or_else(|| "홈 디렉토리를 찾지 못했어요.".to_string())?
+        .canonicalize()
+        .map_err(|e| format!("홈 디렉토리 해석 실패: {e}"))?;
     let canonical_parent = canonical_or_root(expanded.parent().unwrap_or(Path::new(".")), &home)?;
 
     if !canonical_parent.starts_with(&home) {
@@ -97,5 +102,16 @@ mod tests {
     fn rejects_outside_home() {
         let err = resolve_safe_path("/etc/passwd").unwrap_err();
         assert!(err.contains("홈 디렉토리"));
+    }
+
+    #[test]
+    fn allows_inside_home() {
+        // 회귀: Windows canonicalize 의 `\\?\` 접두사로 홈 안 경로가 거부되던 버그.
+        let home = dirs::home_dir().unwrap();
+        let target = home.join(".claude").join("settings.json");
+        let resolved =
+            resolve_safe_path(&target.to_string_lossy()).expect("홈 안 경로는 허용돼야 함");
+        let canon_home = home.canonicalize().unwrap();
+        assert!(resolved.starts_with(&canon_home));
     }
 }
