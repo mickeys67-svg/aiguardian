@@ -4,76 +4,35 @@
 // 불변식(stance-lint 강제): 코드 에디터 없음 · AI 채팅 입력창 없음 ·
 //   명령은 "복사" 버튼만, "실행" 버튼 없음 (user-runs, app-coaches).
 //
-// 데이터: @tg/coach 코어의 buildAdvice() 가 만든 구조화 조언을 그대로 렌더한다.
-// 지금은 샘플 TurnSummary 로 엔진을 돌린다. 다음 단계: Stop 훅/MCP 가 보낸 실제 턴으로 교체.
+// 데이터는 '실제'만 보여준다 — 능동 어댑터(Stop 훅)·MCP(coach_review)가 쓴 상태 파일.
+// 받은 턴이 없으면 가짜 예시를 띄우지 않고 정직한 빈 상태를 보인다(가짜 채움 금지, mock-scan).
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { homeDir } from "@tauri-apps/api/path";
-import { buildAdvice } from "@tg/coach/core";
-import type { AdviceBucket, AdviceKey, TurnSummary } from "@tg/coach/core";
-import { useEnvironment } from "@/lib/hooks";
+import type { AdviceBucket, AdviceKey, CoachState } from "@tg/coach/core";
 import { readFile } from "@/lib/tauri";
 import { CoachConnect } from "./CoachConnect";
 
-interface CoachState {
-  updatedAt: string;
-  source: string;
-  buckets: AdviceBucket[];
-}
-
-// 능동 어댑터(Stop/Cursor 훅)가 쓴 상태 파일을 읽는다. 없으면 null → 예시로 폴백.
+// 능동 어댑터(Stop/Cursor 훅)·MCP 가 쓴 상태 파일을 읽는다. 없으면 null → 빈 상태.
 async function readCoachState(): Promise<CoachState | null> {
   try {
     const home = (await homeDir()).replace(/[\\/]+$/, "");
     const raw = await readFile(`${home}/.tg-coach/latest-turn.json`);
-    return JSON.parse(raw) as CoachState;
+    const state = JSON.parse(raw) as CoachState;
+    return state.buckets?.length ? state : null; // 빈 buckets 는 받은 턴 없음으로 취급
   } catch {
     return null;
   }
 }
 
-type Step = { id: string; label: string };
-const JOURNEY: Step[] = [
-  { id: "env", label: "환경 준비" },
-  { id: "project", label: "첫 프로젝트" },
-  { id: "make", label: "만들기" },
-  { id: "verify", label: "실행·확인" },
-  { id: "deploy", label: "배포" },
-];
-const CURRENT_STEP = "make";
-
-// 샘플 턴 — 실제로는 Stop 훅/MCP 어댑터가 보낸 TurnSummary 로 교체된다.
-const SAMPLE_TURN: TurnSummary = {
-  userPrompt: "할 일 목록 웹페이지를 만들어줘",
-  filesChanged: [
-    { path: "todo/index.html", action: "create" },
-    { path: "todo/main.js", action: "create" },
-    { path: "todo/style.css", action: "create" },
-  ],
-  commandsRun: [{ command: "cd todo && npm install", failed: false }],
-  userMustRun: ["npm run dev"],
-  hadError: false,
-};
-
-const LEARNED = [
-  { term: "터미널", done: true },
-  { term: "npm install", done: true },
-  { term: "dev 서버", done: false },
-  { term: "git 커밋", done: false },
-];
-
 export function CoachDashboard() {
-  const { data: env } = useEnvironment();
-  // 훅이 보낸 라이브 조언을 2초마다 폴링. 있으면 그걸, 없으면 예시 엔진 출력.
+  // 훅/MCP 가 보낸 라이브 조언을 2초마다 폴링. 실제 턴이 없으면 빈 상태.
   const { data: live } = useQuery({
     queryKey: ["coach-state"],
     queryFn: readCoachState,
     refetchInterval: 2000,
   });
-
-  const isLive = !!live;
-  const buckets = live?.buckets ?? buildAdvice(SAMPLE_TURN, { os: env?.os ?? "windows" });
 
   return (
     <div className="max-w-3xl">
@@ -86,86 +45,49 @@ export function CoachDashboard() {
 
       <CoachConnect />
 
-      <JourneyMap />
-
       <section className="mb-6">
         <div className="flex items-center justify-between mb-2 px-1">
-          <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide">
-            방금 한 턴
-          </h2>
-          {isLive ? (
-            <span className="text-[11px] text-success">🟢 라이브 · {live!.source}</span>
-          ) : (
-            <span className="text-[11px] text-subtle">예시 (아직 받은 턴 없음)</span>
+          <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide">방금 한 턴</h2>
+          {live && (
+            <span className="text-[11px] text-success">
+              🟢 라이브 · {live.phase === "enriched" ? "맞춤 코칭" : "사실 정리"}
+            </span>
           )}
         </div>
-        <div className="space-y-3">
-          {buckets.map((b) => (
-            <BucketCard key={b.key} bucket={b} />
-          ))}
-        </div>
-      </section>
 
-      <LearnedPanel />
+        {live ? (
+          <div className="space-y-3">
+            {live.buckets.map((b) => (
+              <BucketCard key={b.key} bucket={b} />
+            ))}
+          </div>
+        ) : (
+          <EmptyTurn />
+        )}
+      </section>
     </div>
   );
 }
 
-function JourneyMap() {
-  const currentIdx = JOURNEY.findIndex((s) => s.id === CURRENT_STEP);
+// 받은 턴이 없을 때 — 가짜 예시 대신 다음 행동을 정직하게 안내.
+function EmptyTurn() {
   return (
-    <section className="mb-6 rounded-2xl bg-surface border border-subtle/15 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide">
-          지금 어디쯤이에요
-        </h2>
-        {/* 진척 추적이 아직 없어 고정 예시다 — 라이브는 "방금 한 턴"뿐. 진짜처럼 오해 막기. */}
-        <span className="text-[11px] text-subtle">예시</span>
-      </div>
-      <ol className="flex items-center gap-2">
-        {JOURNEY.map((s, i) => {
-          const state = i < currentIdx ? "done" : i === currentIdx ? "now" : "todo";
-          return (
-            <li key={s.id} className="flex items-center gap-2 flex-1 last:flex-none">
-              <div className="flex flex-col items-center gap-1">
-                <span
-                  className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-medium ${
-                    state === "done"
-                      ? "bg-success/15 text-success"
-                      : state === "now"
-                        ? "bg-primary text-white"
-                        : "bg-bg text-subtle border border-subtle/20"
-                  }`}
-                >
-                  {state === "done" ? "✓" : i + 1}
-                </span>
-                <span
-                  className={`text-[11px] whitespace-nowrap ${
-                    state === "now" ? "text-ink font-medium" : "text-subtle"
-                  }`}
-                >
-                  {s.label}
-                </span>
-              </div>
-              {i < JOURNEY.length - 1 && (
-                <span
-                  className={`h-px flex-1 ${i < currentIdx ? "bg-success/40" : "bg-subtle/20"}`}
-                  aria-hidden
-                />
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </section>
+    <div className="rounded-2xl bg-surface border border-subtle/15 p-6 text-center">
+      <p className="text-sm text-ink mb-1">아직 짚어드릴 턴이 없어요.</p>
+      <p className="text-xs text-subtle">
+        위에서 코치를 켜고, 쓰시는 AI에게 한 가지를 만들어 달라고 해보세요. 한 턴이 끝나면 여기서 짚어드릴게요.
+      </p>
+    </div>
   );
 }
 
 const TONE_RING: Record<AdviceKey, string> = {
+  encourage: "border-success/40",
   recap: "border-subtle/15",
   verify: "border-subtle/15",
   do: "border-primary/30",
   missed: "border-warning/40",
+  ideas: "border-primary/30",
   next: "border-subtle/15",
 };
 
@@ -218,35 +140,5 @@ function CommandRow({ cmd }: { cmd: string }) {
         {copied ? "복사됨 ✓" : "복사"}
       </button>
     </div>
-  );
-}
-
-function LearnedPanel() {
-  const done = LEARNED.filter((l) => l.done).length;
-  return (
-    <section className="mb-6">
-      <div className="flex items-center justify-between mb-2 px-1">
-        <h2 className="text-xs font-semibold text-subtle uppercase tracking-wide">
-          배운 것 ({done}/{LEARNED.length})
-        </h2>
-        {/* 고정 예시 — 실제 학습 추적은 후속. (mock-scan 정직성) */}
-        <span className="text-[11px] text-subtle">예시</span>
-      </div>
-      <div className="rounded-2xl bg-surface border border-subtle/15 p-4 flex flex-wrap gap-2">
-        {LEARNED.map((l) => (
-          <span
-            key={l.term}
-            className={`text-xs px-2.5 py-1 rounded-full ${
-              l.done
-                ? "bg-success/15 text-success"
-                : "bg-bg text-subtle border border-subtle/20"
-            }`}
-          >
-            {l.done ? "✓ " : ""}
-            {l.term}
-          </span>
-        ))}
-      </div>
-    </section>
   );
 }

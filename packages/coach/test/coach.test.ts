@@ -13,7 +13,7 @@ import {
   summarizeLastTurn,
   extractUserCommands,
 } from "../src/shared/transcript.ts";
-import { writeCoachState, coachStatePath } from "../src/shared/state.ts";
+import { writeCoachState, deleteCoachState, coachStatePath } from "../src/shared/state.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -46,9 +46,68 @@ const errorTurn: TurnSummary = {
 
 // ── core: buildAdvice ──────────────────────────────────────────
 
-test("web 턴은 recap·verify·do·missed·next 버킷을 만든다", () => {
+test("도출 입력이 없으면 사실 버킷만 — ideas 는 안 뜬다(규칙 캔 문구 금지)", () => {
   const keys = buildAdvice(webTurn).map((b) => b.key);
-  assert.deepEqual(keys, ["recap", "verify", "do", "missed", "next"]);
+  assert.deepEqual(keys, ["encourage", "recap", "verify", "do", "missed", "next"]);
+});
+
+test("성공 턴은 맨 앞에 격려(encourage). 도출 격려 없으면 사실 기반으로 폴백한다", () => {
+  const buckets = buildAdvice(webTurn);
+  assert.equal(buckets[0]!.key, "encourage");
+  assert.ok(JSON.stringify(buckets[0]).includes("👍")); // 폴백 한 줄
+});
+
+test("세션 AI가 도출한 격려·아이디어를 쓴다 (격려는 도출분 우선, ideas 버킷 등장)", () => {
+  const buckets = buildAdvice(webTurn, {
+    derived: {
+      encouragement: "할 일 목록의 뼈대를 직접 잡으셨네요, 좋은 출발이에요 👍",
+      ideas: ['"완료한 항목에 취소선을 그어줘"', '"새로고침해도 목록이 남게 해줘"'],
+    },
+  });
+  assert.equal(buckets[0]!.key, "encourage");
+  assert.ok(JSON.stringify(buckets[0]).includes("뼈대를 직접"));
+  const ideas = buckets.find((b) => b.key === "ideas")!;
+  assert.equal(ideas.items.length, 2);
+});
+
+test("가드레일: ideas 의 스탠스 누수('제가 ~할게요')·코드펜스를 떨어낸다", () => {
+  const buckets = buildAdvice(webTurn, {
+    derived: { ideas: ["제가 다크모드를 추가할게요", "```npm i```", '"버튼 색을 바꿔줘"'] },
+  });
+  const ideas = buckets.find((b) => b.key === "ideas")!;
+  assert.equal(ideas.items.length, 1);
+  assert.ok(JSON.stringify(ideas.items[0]).includes("버튼 색"));
+});
+
+test("가드레일: 영어 약속형 스탠스 누수('I'll add…')도 떨어낸다 (fail-open 차단)", () => {
+  const buckets = buildAdvice(webTurn, {
+    derived: { ideas: ["I'll add a dark mode for you", "let me wire the form", '"connect the form to email"'] },
+  });
+  const ideas = buckets.find((b) => b.key === "ideas")!;
+  assert.equal(ideas.items.length, 1); // 앞의 둘은 탈락, 사용자 지시형만 통과
+  assert.ok(JSON.stringify(ideas.items[0]).includes("connect the form"));
+});
+
+test("locale 을 넘겨도 깨지지 않고 사실 버킷은 그대로다 (ko 전용 규칙)", () => {
+  const buckets = buildAdvice(webTurn, { locale: "en" });
+  assert.equal(buckets[0]!.key, "encourage"); // 비-에러 턴 격려 불변
+  assert.ok(buckets.some((b) => b.key === "recap"));
+});
+
+test("가드레일: 명령을 끼운 격려는 폴백(사실 기반)으로 대체된다", () => {
+  const buckets = buildAdvice(webTurn, {
+    derived: { encouragement: "잘하셨어요 👍\n```\nnpm run build\n```" },
+  });
+  assert.equal(buckets[0]!.key, "encourage");
+  assert.ok(!JSON.stringify(buckets[0]).includes("npm run build")); // 새치기 차단 → 폴백
+});
+
+test("에러 턴은 도출 입력이 와도 격려·아이디어를 만들지 않는다 (톤 배려·스탠스 안전장치)", () => {
+  const keys = buildAdvice(errorTurn, {
+    derived: { encouragement: "그래도 잘하셨어요", ideas: ["다시 해보자"] },
+  }).map((b) => b.key);
+  assert.ok(!keys.includes("encourage"));
+  assert.ok(!keys.includes("ideas"));
 });
 
 test("do 버킷에 사용자 직접 실행 명령이 command 항목으로 들어간다", () => {
@@ -129,6 +188,7 @@ test("extractUserCommands 는 코드펜스와 인라인 백틱에서 명령을 �
 // ── shared: state (HUD 라이브 채널) ────────────────────────────
 
 test("writeCoachState 가 상태 파일을 읽어올 수 있게 기록한다", () => {
+  deleteCoachState(); // 직전 run 의 enriched 잔류가 facts 가드에 걸리지 않게 결정적으로
   const buckets = buildAdvice(webTurn);
   writeCoachState(buckets, "test");
   const saved = JSON.parse(readFileSync(coachStatePath(), "utf8"));
@@ -136,3 +196,22 @@ test("writeCoachState 가 상태 파일을 읽어올 수 있게 기록한다", (
   assert.equal(saved.buckets.length, buckets.length);
   assert.ok(typeof saved.updatedAt === "string");
 });
+
+test("race 가드: facts 쓰기는 최근 enriched 를 덮지 않는다", () => {
+  const enriched = buildAdvice(webTurn, { derived: { ideas: ['"버튼 추가해줘"'] } });
+  writeCoachState(enriched, "claude-desktop", { phase: "enriched", locale: "ko" });
+  // 곧바로 훅이 facts 로 쓰려 해도(같은 턴 창) enriched 가 살아남아야 한다.
+  writeCoachState(buildAdvice(webTurn), "claude-code", { phase: "facts" });
+  const saved = JSON.parse(readFileSync(coachStatePath(), "utf8"));
+  assert.equal(saved.phase, "enriched");
+  assert.equal(saved.locale, "ko");
+  assert.ok(saved.buckets.some((b: { key: string }) => b.key === "ideas"));
+});
+
+test("deleteCoachState 가 상태 파일을 폐기한다(끄기 시 잔류 제거)", () => {
+  writeCoachState(buildAdvice(webTurn), "test", { phase: "facts" });
+  deleteCoachState();
+  assert.throws(() => readFileSync(coachStatePath(), "utf8")); // 파일 없음
+});
+
+// (부스터 결정 로직은 ADR-0004 스탠스 위반으로 제거됨 — 자호출률은 캡처로 실측 후 재검토.)

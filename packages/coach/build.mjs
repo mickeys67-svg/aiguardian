@@ -30,3 +30,4 @@ for (const e of entries) {
 }
 
 console.log(`✓ 번들 완료: ${entries.map((e) => e.out).join(", ")}`);
+// 주: Tauri 리소스 복사는 데스크탑이 소유한다(apps/desktop/scripts/sync-coach-resource.mjs).

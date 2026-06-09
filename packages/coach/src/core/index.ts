@@ -2,11 +2,11 @@
 // 어댑터(claude-code·cursor·mcp)와 HUD 가 모두 이 코어만 의존한다.
 
 import { buildAdvice } from "./advice.ts";
-import { renderAdvice, renderAdviceMarkdown } from "./render.ts";
+import { renderAdvice } from "./render.ts";
 import type { AdviceOptions } from "./advice.ts";
 import type { TurnSummary } from "./types.ts";
 
-export type { TurnSummary, FileChange, CommandRun, AdviceBucket, AdviceItem, AdviceKey } from "./types.ts";
+export type { TurnSummary, FileChange, CommandRun, AdviceBucket, AdviceItem, AdviceKey, CoachState, CoachPhase } from "./types.ts";
 export type { Os, AdviceOptions } from "./advice.ts";
 export { buildAdvice } from "./advice.ts";
 export { renderAdvice, renderAdviceMarkdown } from "./render.ts";
@@ -19,11 +19,4 @@ export function adviseOnTurn(summary: TurnSummary, opts?: AdviceOptions): string
   const buckets = buildAdvice(summary, opts);
   if (!buckets.length) return null;
   return renderAdvice(buckets);
-}
-
-/** 위와 같되 마크다운으로(MCP 도구 응답 등). 조언 없으면 null. */
-export function adviseOnTurnMarkdown(summary: TurnSummary, opts?: AdviceOptions): string | null {
-  const buckets = buildAdvice(summary, opts);
-  if (!buckets.length) return null;
-  return renderAdviceMarkdown(buckets);
 }

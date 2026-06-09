@@ -9,6 +9,9 @@ import {
   removeCoachStopHook,
   hasCoachStopHook,
   coachStopCommand,
+  addCoachMcpServer,
+  removeCoachMcpServer,
+  hasCoachMcpServer,
 } from "@tg/coach/install";
 import { readFile, writeFile } from "./tauri";
 
@@ -35,13 +38,30 @@ function parse(raw: string): Record<string, unknown> {
   }
 }
 
-/** 현재 코치가 켜져 있나(Claude Code Stop 훅 기준). */
+/** 현재 코치가 켜져 있나(Claude Code Stop 훅 기준 = 기본 on/off). */
 export async function coachInstalled(): Promise<boolean> {
   return hasCoachStopHook(parse(await readRaw(await settingsPath())));
 }
 
-/** 코치 켜기 — 훅 추가. 기존 settings 는 .bak 으로 백업. 설정 파일 경로 반환. */
-export async function installCoach(scriptPath: string): Promise<string> {
+/**
+ * coach MCP 서버가 settings.json 에 '실제로 등록'돼 있나(라이브 번들 경로 존재가 아니라).
+ * 이게 true 라야 세션 AI가 coach_review 를 불러 맞춤 격려·아이디어를 채울 수 있다.
+ */
+export async function coachMcpInstalled(): Promise<boolean> {
+  return hasCoachMcpServer(parse(await readRaw(await settingsPath())));
+}
+
+/**
+ * 코치 켜기 — Stop 훅 + coach MCP 서버를 '한 쌍'으로 등록. 기존 settings 는 .bak 백업.
+ *  - 훅: 잘된 턴의 사실층을 0초로(침묵 방지).
+ *  - MCP: 세션 AI가 coach_review 를 호출해 격려·아이디어를 맥락으로 채우는 통로.
+ * 둘 중 하나만 켜면 효과 0(훅만=캔 양산 / MCP만=자동성 결손)이라 함께 켠다.
+ * mcpScriptPath 가 아직 번들 안 돼 null 이면 훅만 켜고 진행(graceful).
+ */
+export async function installCoach(
+  stopScriptPath: string,
+  mcpScriptPath?: string | null,
+): Promise<string> {
   const path = await settingsPath();
   const raw = await readRaw(path);
   if (raw) {
@@ -51,15 +71,28 @@ export async function installCoach(scriptPath: string): Promise<string> {
       /* 백업 실패해도 설치는 진행(원본 손상 아님) */
     }
   }
-  const next = addCoachStopHook(parse(raw), coachStopCommand(scriptPath));
+  let next = addCoachStopHook(parse(raw), coachStopCommand(stopScriptPath));
+  if (mcpScriptPath) next = addCoachMcpServer(next, mcpScriptPath);
   await writeFile(path, JSON.stringify(next, null, 2) + "\n");
   return path;
 }
 
-/** 코치 끄기 — 코치 훅만 제거(다른 훅·설정 보존). */
+/** 코치 끄기 — 코치 훅 + MCP 서버만 제거(사용자의 다른 훅·서버·설정 보존) + HUD 상태 비우기. */
 export async function uninstallCoach(): Promise<string> {
   const path = await settingsPath();
-  const next = removeCoachStopHook(parse(await readRaw(path)));
+  const next = removeCoachMcpServer(removeCoachStopHook(parse(await readRaw(path))));
   await writeFile(path, JSON.stringify(next, null, 2) + "\n");
+  await clearCoachState(); // 끄면 마지막 코칭이 HUD 에 남지 않게(프라이버시·혼란 방지)
   return path;
+}
+
+/** HUD 상태파일(~/.tg-coach/latest-turn.json)을 빈 코칭으로 덮어 잔류를 없앤다. 실패해도 무해. */
+async function clearCoachState(): Promise<void> {
+  try {
+    const home = (await homeDir()).replace(/[\\/]+$/, "");
+    const cleared = { updatedAt: new Date().toISOString(), source: "uninstalled", buckets: [], phase: "facts" };
+    await writeFile(`${home}/.tg-coach/latest-turn.json`, JSON.stringify(cleared, null, 2));
+  } catch {
+    /* 파일이 없거나 못 써도 무해 — 다음 turn 이 덮거나 HUD 가 빈 buckets 를 안 띄운다 */
+  }
 }
