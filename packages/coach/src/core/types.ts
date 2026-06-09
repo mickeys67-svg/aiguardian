@@ -23,13 +23,25 @@ export type AdviceItem =
   | { kind: "command"; command: string };
 
 /** 버킷 종류 — HUD 가 색(tone)을 매핑할 때 쓴다. */
-export type AdviceKey = "recap" | "verify" | "do" | "missed" | "next";
+export type AdviceKey = "encourage" | "recap" | "verify" | "do" | "missed" | "ideas" | "next";
 
 export interface AdviceBucket {
   key: AdviceKey;
   icon: string;
   title: string;
   items: AdviceItem[];
+}
+
+/**
+ * 세션 AI가 '실제 대화 맥락으로' 직접 써서 넘기는 주관적 코칭.
+ * 규칙으로는 못 만든다 — 진짜 맞춤이려면 모델이 지금 맥락을 보고 도출해야 한다.
+ * (ADR-0004 가짜 채움 금지: 모델이 안 쓰면 해당 버킷은 아예 안 뜬다.)
+ */
+export interface DerivedAdvice {
+  /** 이번 턴에 사용자가 실제로 잘 해낸 점 한 줄. 사실 기반·과장 금지. 없으면 생략. */
+  encouragement?: string;
+  /** 지금 이 프로젝트 맥락에 맞는 다음 선택지 2~3개. 각 항목은 사용자가 시킬 말('~해줘') 형태. */
+  ideas?: string[];
 }
 
 /** 한 개발 턴에 무슨 일이 있었나 — 모든 어댑터가 채워 넘기는 정규화 입력. */

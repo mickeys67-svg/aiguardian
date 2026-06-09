@@ -38,7 +38,8 @@
     "targets": "all",
     "createUpdaterArtifacts": true,
     "resources": {
-      "resources/coach/tg-coach-stop.mjs": "coach/tg-coach-stop.mjs"
+      "resources/coach/tg-coach-stop.mjs": "coach/tg-coach-stop.mjs",
+      "resources/coach/tg-coach-mcp.mjs": "coach/tg-coach-mcp.mjs"
     },
     "category": "DeveloperTool",
     "shortDescription": "바이브코딩 입문자를 위한 통합 가디언",

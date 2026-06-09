@@ -22,14 +22,21 @@ import { writeCoachState } from "../../shared/state.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
+// 잘된 턴의 수동 유도(systemMessage = 사용자 전용). 세션 AI가 coach_review 를 자호출하면
+// 격려·아이디어가 자동으로 채워지지만, 안 부른 경우의 폴백으로 사용자가 직접 부를 길을 알려준다.
+const ENRICH_NUDGE = '\n💬 "코치 봐줘"라고 하면, 지금 코드에 맞는 격려와 다음 선택지도 짚어드려요.';
+
 /** transcript 텍스트 → 렌더된 조언 문자열(조언 없으면 null). 동시에 HUD 용 상태 파일도 기록. */
 function adviseFromTranscript(jsonl: string): string | null {
   const summary = summarizeLastTurn(jsonl);
   if (!summary) return null;
   const buckets = buildAdvice(summary);
   if (!buckets.length) return null;
-  writeCoachState(buckets, "claude-code"); // HUD 로 라이브 전송
-  return renderAdvice(buckets);
+  writeCoachState(buckets, "claude-code", { phase: "facts" }); // 1박자: 사실 즉시 → HUD
+  // 잘된 턴(에러 없음)에만 수동 유도를 덧붙인다. 에러 턴엔 톤 배려로 생략.
+  const hasDerived = buckets.some((b) => b.key === "ideas");
+  const nudge = !summary.hadError && !hasDerived ? ENRICH_NUDGE : "";
+  return renderAdvice(buckets) + nudge;
 }
 
 function runDemo(): void {

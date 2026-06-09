@@ -162,10 +162,12 @@ function JourneyMap() {
 }
 
 const TONE_RING: Record<AdviceKey, string> = {
+  encourage: "border-success/40",
   recap: "border-subtle/15",
   verify: "border-subtle/15",
   do: "border-primary/30",
   missed: "border-warning/40",
+  ideas: "border-primary/30",
   next: "border-subtle/15",
 };
 

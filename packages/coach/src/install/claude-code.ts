@@ -78,3 +78,45 @@ export function removeCoachStopHook(settings: Json | null | undefined): Json {
   else next.hooks = hooks;
   return next;
 }
+
+// ── 코치 MCP 서버 등록 (settings.json mcpServers) ───────────────────────────
+//
+// 잘된 턴의 능동 코칭(격려·아이디어)은 세션 AI가 coach_review(MCP)를 호출해야 채워진다.
+// 그러려면 Claude Code 에 coach 서버가 등록돼 있어야 한다. 훅과 한 쌍으로 켜고 끈다.
+// 기존 백엔드 서버('tg')와 충돌하지 않도록 별도 키('tg-coach')를 쓴다.
+
+/** 코치 MCP 서버 키 — settings.json mcpServers 안에서 우리 것을 식별(기존 'tg'와 분리). */
+const COACH_MCP_KEY = "tg-coach";
+
+interface McpServerEntry {
+  command: string;
+  args: string[];
+}
+
+/** 코치 MCP 서버가 등록돼 있나. */
+export function hasCoachMcpServer(settings: Json | null | undefined): boolean {
+  if (!settings) return false;
+  const servers = settings.mcpServers as Json | undefined;
+  return Boolean(servers && typeof servers === "object" && COACH_MCP_KEY in servers);
+}
+
+/** 코치 MCP 서버 등록(stdio: node <번들 경로>). 다른 서버는 보존. 새 객체 반환. */
+export function addCoachMcpServer(settings: Json | null | undefined, mcpScriptPath: string): Json {
+  const next: Json = { ...(settings ?? {}) };
+  const servers: Json = { ...((next.mcpServers as Json) ?? {}) };
+  servers[COACH_MCP_KEY] = { command: "node", args: [mcpScriptPath] } satisfies McpServerEntry;
+  next.mcpServers = servers;
+  return next;
+}
+
+/** 코치 MCP 서버만 제거. 다른 서버는 보존. 빈 구조는 정리. 새 객체 반환. */
+export function removeCoachMcpServer(settings: Json | null | undefined): Json {
+  const next: Json = { ...(settings ?? {}) };
+  const serversObj = next.mcpServers as Json | undefined;
+  if (!serversObj || typeof serversObj !== "object") return next;
+  const servers: Json = { ...serversObj };
+  delete servers[COACH_MCP_KEY];
+  if (Object.keys(servers).length === 0) delete next.mcpServers;
+  else next.mcpServers = servers;
+  return next;
+}

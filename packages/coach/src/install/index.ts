@@ -4,4 +4,7 @@ export {
   hasCoachStopHook,
   addCoachStopHook,
   removeCoachStopHook,
+  hasCoachMcpServer,
+  addCoachMcpServer,
+  removeCoachMcpServer,
 } from "./claude-code.ts";

@@ -6,27 +6,37 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { resolveResource } from "@tauri-apps/api/path";
 import { coachInstalled, installCoach, uninstallCoach } from "@/lib/coachInstall";
 
-// 훅이 실행할 stop-hook 스크립트 경로 해석:
-//  1) localStorage 오버라이드(개발용)  2) 앱 번들 리소스(릴리스)
-// 둘 다 없으면 아직 연결 불가(번들 단계 필요) → 버튼 비활성 + 안내.
-async function resolveScriptPath(): Promise<string | null> {
-  const override = localStorage.getItem("tg.coach.scriptPath");
+// 번들 리소스 경로 해석: 1) localStorage 오버라이드(개발용) 2) 앱 번들 리소스(릴리스).
+async function resolveBundled(overrideKey: string, resource: string): Promise<string | null> {
+  const override = localStorage.getItem(overrideKey);
   if (override) return override;
   try {
-    return await resolveResource("coach/tg-coach-stop.mjs");
+    return await resolveResource(resource);
   } catch {
     return null;
   }
 }
 
+/** 훅이 실행할 stop-hook 스크립트. 없으면 연결 불가(번들 단계 필요). */
+function resolveStopPath(): Promise<string | null> {
+  return resolveBundled("tg.coach.scriptPath", "coach/tg-coach-stop.mjs");
+}
+
+/** 세션 AI가 호출할 coach MCP 서버. 없으면 훅만 켜짐(격려·아이디어 자동 채움은 비활성). */
+function resolveMcpPath(): Promise<string | null> {
+  return resolveBundled("tg.coach.mcpPath", "coach/tg-coach-mcp.mjs");
+}
+
 export function CoachConnect() {
   const qc = useQueryClient();
   const [scriptPath, setScriptPath] = useState<string | null>(null);
+  const [mcpPath, setMcpPath] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    void resolveScriptPath().then(setScriptPath);
+    void resolveStopPath().then(setScriptPath);
+    void resolveMcpPath().then(setMcpPath);
   }, []);
 
   const { data: installed } = useQuery({
@@ -39,7 +49,7 @@ export function CoachConnect() {
     setError(null);
     try {
       if (installed) await uninstallCoach();
-      else if (scriptPath) await installCoach(scriptPath);
+      else if (scriptPath) await installCoach(scriptPath, mcpPath);
       await qc.invalidateQueries({ queryKey: ["coach-installed"] });
     } catch (e) {
       setError(typeof e === "string" ? e : (e as Error).message);
@@ -57,7 +67,9 @@ export function CoachConnect() {
           <h2 className="text-sm font-semibold text-ink mb-0.5">코치 연결</h2>
           <p className="text-xs text-subtle">
             {installed
-              ? "✅ 켜짐 · Claude Code 가 한 턴을 끝낼 때마다 코치가 짚어줘요."
+              ? mcpPath
+                ? "✅ 켜짐 · 한 턴을 끝낼 때마다 코치가 짚어주고, 잘된 경우엔 격려와 다음 선택지도 채워줘요."
+                : "✅ 켜짐(기본) · 사실 안내는 떠요. 맞춤 격려·아이디어는 MCP 번들 후 켜져요."
               : "Claude Code 에 코치를 붙여요. 설정 파일은 앱이 알아서 써드려요."}
           </p>
         </div>

@@ -17,6 +17,13 @@ export interface CoachReviewInput {
   commandsRun?: { command: string; failed?: boolean }[];
   userMustRun?: string[];
   hadError?: boolean;
+  // ── 세션 AI가 '직접 맥락으로' 써넣는 주관적 코칭(규칙이 못 만드는 부분) ──
+  /** 이번 턴에 사용자가 실제로 잘 해낸 점 한 줄. 사실 기반. 없으면 생략. */
+  encouragement?: string;
+  /** 지금 맥락에 맞는 다음 선택지 2~3개. 각 항목은 사용자가 시킬 말('~해줘') 형태. */
+  ideas?: string[];
+  /** 코칭 작성 언어(BCP-47). 세션 AI가 사용자 대화 언어를 '선언'한다. 미지정 시 'ko'. */
+  locale?: string;
 }
 
 /** 느슨한 입력을 코어의 정규화 입력(TurnSummary)으로. */
@@ -48,7 +55,11 @@ export function reviewTurn(input: CoachReviewInput): {
   buckets: AdviceBucket[];
   text: string;
 } {
-  const buckets = buildAdvice(toTurnSummary(input));
+  // 사실은 정규화 입력(TurnSummary)으로, 주관(격려·아이디어)은 derived 로 — 코어가 가드레일을 건다.
+  const buckets = buildAdvice(toTurnSummary(input), {
+    derived: { encouragement: input.encouragement, ideas: input.ideas },
+    ...(input.locale ? { locale: input.locale } : {}),
+  });
   const text = buckets.length ? renderAdviceMarkdown(buckets) : NO_ADVICE;
   return { buckets, text };
 }
