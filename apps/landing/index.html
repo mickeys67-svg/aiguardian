@@ -3,16 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TG · 컴맹도 30분이면 첫 앱 띄워요</title>
+    <meta name="theme-color" content="#4ecdc4" />
+    <meta name="robots" content="index, follow" />
+    <title>Vibemate · AI 코딩, 막힐 때 옆에서 짚어주는 코치</title>
     <meta
       name="description"
-      content="컴퓨터 켠 첫 순간부터 첫 앱을 인터넷에 띄우는 그 순간까지. 끊김 없이 안내하는 가디언."
+      content="AI랑 코딩하다 터미널·에러·다음 단계에서 막히는 입문자를 위한 코치. 대신 해주지 않고, 한 턴이 끝날 때마다 무슨 일/확인할 것/직접 할 일을 한국어로 짚어줘요. Windows·Mac 무료."
     />
-    <meta property="og:title" content="TG — 바이브코딩 입문자를 위한 통합 가디언" />
+    <meta name="keywords" content="바이브코딩,Claude Code,Cursor,코치,터미널,입문자,AI 코딩 도우미,MCP,Tauri" />
+    <meta name="author" content="Vibemate" />
+    <link rel="canonical" href="https://vibemate.kr/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Vibemate" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:url" content="https://vibemate.kr/" />
+    <meta property="og:title" content="Vibemate — AI 코딩, 막힐 때 옆에서 짚어주는 코치" />
     <meta
       property="og:description"
-      content="환경 진단 · 자동 설치 · AI 연결 · 첫 배포까지 한 도구로."
+      content="대신 해주지 않고, 한 턴이 끝날 때마다 무슨 일/확인할 것/직접 할 일을 한국어로 짚어주는 코치."
     />
+    <meta property="og:image" content="https://vibemate.kr/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Vibemate — AI 코딩, 막힐 때 옆에서 짚어주는 코치" />
+    <meta name="twitter:description" content="대신 해주지 않고, 한 턴이 끝날 때마다 무슨 일/확인할 것/직접 할 일을 한국어로 짚어주는 코치." />
+    <meta name="twitter:image" content="https://vibemate.kr/og-image.png" />
+
+    <!-- Structured Data — SoftwareApplication -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Vibemate",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Windows, macOS",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "KRW"
+        },
+        "url": "https://vibemate.kr/",
+        "description": "AI 코딩 입문자를 위한 코치 — 한 턴이 끝날 때마다 무엇을·왜·다음은 무엇인지 짚어줘요."
+      }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link
       rel="stylesheet"
@@ -136,6 +176,42 @@
       .alt-downloads a:hover {
         text-decoration: underline;
       }
+      .install-help {
+        margin-top: 20px;
+        max-width: 540px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: left;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 13px;
+      }
+      .install-help summary {
+        cursor: pointer;
+        color: var(--primary-dark);
+        font-weight: 600;
+        outline: none;
+      }
+      .install-help summary:hover {
+        text-decoration: underline;
+      }
+      .install-help ul {
+        margin: 12px 0 4px;
+        padding-left: 20px;
+        color: var(--ink);
+      }
+      .install-help li {
+        margin: 6px 0;
+        line-height: 1.6;
+      }
+      .install-help code {
+        background: var(--bg);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
       .features {
         padding: 60px 0;
         display: grid;
@@ -219,183 +295,384 @@
         color: var(--subtle);
         margin-left: 6px;
       }
+      .welcome-panel {
+        max-width: 560px;
+        margin: 0 auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px;
+        text-align: left;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      }
+      .welcome-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .welcome-header img {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--bg);
+      }
+      .welcome-greeting {
+        margin: 0 0 4px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .welcome-meta {
+        margin: 0 0 4px;
+        font-size: 13px;
+        color: var(--subtle);
+      }
+      .welcome-counter {
+        margin: 0;
+        font-size: 13px;
+        color: var(--primary-dark);
+      }
+      .welcome-counter strong {
+        font-size: 15px;
+      }
+      #btn-google {
+        background: white;
+        color: var(--ink);
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+      #btn-google:hover {
+        background: #f8f8f8;
+        transform: translateY(-1px);
+      }
+      #btn-google .cta-icon {
+        background: linear-gradient(45deg, #4285f4 0%, #34a853 25%, #fbbc04 50%, #ea4335 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        font-weight: 900;
+        font-size: 22px;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <header>
         <div class="brand">
-          TG
-          <span class="version-pill" id="version">v0.1</span>
+          Vibemate
+          <span class="version-pill" id="version">v0.3</span>
         </div>
         <nav>
           <a href="#features">기능</a>
-          <a href="#flow">10단계</a>
-          <a href="#download">다운로드</a>
+          <a href="#flow">어떻게</a>
+          <a href="#download">시작</a>
+          <a href="#" id="nav-logout" style="display:none">로그아웃</a>
         </nav>
       </header>
 
       <section class="hero" id="download">
-        <span class="badge">v0.1 베타 모집 중</span>
-        <h1>컴맹도 30분이면<br />첫 앱 띄워요.</h1>
+        <h1>AI랑 코딩하다 막히면<br />옆에서 짚어줘요.</h1>
         <p>
-          AI로 앱을 만들 수 있다는 말은 들었지만 어디서부터 시작해야 할지 모르는
-          분들을 위한 데스크톱 가디언.
+          AI가 코드를 짜는 건 봤지만 터미널·에러·"이제 뭐 하지"에서 막히는 분들을 위한 코치예요.
+          대신 해주지 않아요 — 한 턴이 끝날 때마다 무슨 일이 있었고, 뭘 확인하고, 직접 뭘 해야 하는지 한국어로 짚어줘요.
         </p>
 
-        <div class="download">
-          <a class="cta" id="primary-download" href="#" rel="noopener">
-            <span class="cta-icon">⬇</span>
-            <span id="primary-label">다운로드 준비 중...</span>
-          </a>
-          <span class="cta-meta" id="primary-meta">
-            OS 자동 감지 · 무료 · 비밀번호 한 번만 물어봐요
+        <!-- 비로그인 상태 — Google 로 시작 -->
+        <div class="download" id="cta-anon">
+          <button class="cta" id="btn-google" type="button">
+            <span class="cta-icon">G</span>
+            <span>Google 로 시작</span>
+          </button>
+          <span class="cta-meta">
+            이메일만 받아요 · 비밀번호 입력 X · 무료
           </span>
         </div>
 
-        <div class="alt-downloads">
-          <span>다른 OS:</span>
-          <a id="dl-win" href="#">Windows</a>·
-          <a id="dl-mac" href="#">Mac (Intel/M1)</a>·
-          <a id="dl-mac-arm" href="#">Mac M1/M2</a>·
-          <a id="dl-mac-intel" href="#">Mac Intel</a>·
-          <a id="dl-linux" href="#">Linux</a>
+        <!-- 로그인 후 — 환영 + 다운로드 -->
+        <div class="welcome-panel" id="welcome-panel" style="display:none">
+          <div class="welcome-header">
+            <img id="welcome-avatar" alt="" />
+            <div>
+              <p class="welcome-greeting"><span id="welcome-name">친구</span> 님, 환영해요 👋</p>
+              <p class="welcome-meta"><span id="welcome-email"></span></p>
+              <p class="welcome-counter">당신은 <strong id="member-number">?</strong>번째 회원이에요 (총 <span id="total-members">?</span>명)</p>
+            </div>
+          </div>
+
+          <div class="download">
+            <a class="cta" id="primary-download" href="#" rel="noopener">
+              <span class="cta-icon">⬇</span>
+              <span id="primary-label">다운로드 준비 중...</span>
+            </a>
+            <span class="cta-meta" id="primary-meta">
+              OS 자동 감지 · 무료 · 비밀번호 한 번만 물어봐요
+            </span>
+          </div>
+
+          <div class="alt-downloads">
+            <span>다른 OS:</span>
+            <a id="dl-win" href="#">Windows (.exe)</a>·
+            <a id="dl-win-msi" href="#" title="AhnLab V3 등 안티바이러스 차단 시">Windows (.msi)</a>·
+            <a id="dl-mac" href="#">Mac (Universal)</a>·
+            <a id="dl-mac-arm" href="#">Mac M1/M2</a>·
+            <a id="dl-mac-intel" href="#">Mac Intel</a>
+          </div>
+
+          <details class="install-help">
+            <summary>설치가 안 되시나요? (Windows 사용자)</summary>
+            <ul>
+              <li><strong>SmartScreen 경고</strong> ("Windows에서 PC를 보호했습니다") → "추가 정보" 클릭 → "실행" 버튼</li>
+              <li><strong>AhnLab V3 / 알약 등 백신 차단</strong> → 위의 <em>Windows (.msi)</em> 받기 (또는 백신 일시 중지 후 재시도)</li>
+              <li><strong>UAC 팝업</strong> ("이 앱이 디바이스를 변경할 수 있도록 허용하시겠어요?") → "예" 클릭</li>
+              <li><strong>설치 후 안 보임</strong> → 시작 메뉴에서 <code>vibemate</code> 검색</li>
+            </ul>
+          </details>
         </div>
       </section>
 
       <section class="features" id="features">
         <article class="feature">
-          <h3>한 번 다운로드 = 자동 진단·설치</h3>
+          <h3>턴이 끝나면 코치가 짚어줘요</h3>
           <p>
-            터미널·Python·Git이 뭔지 몰라도 됩니다. 가디언이 부족한 도구를 안전하게 깔아드려요.
+            Claude Code·Cursor가 한 작업을 끝낼 때마다 — 무슨 일/확인할 것/직접 할 일/놓친 것/다음 방향을 한국어로 정리해 줘요.
           </p>
         </article>
         <article class="feature">
-          <h3>AI 자동 연결</h3>
+          <h3>대신 하지 않아요, 짚어만 줘요</h3>
           <p>
-            Claude Desktop · Claude Code · Cursor에 MCP 다리를 자동으로 놓아드립니다.
+            명령은 복사해서 당신이 직접 실행해요. 코치는 터미널·셸·에러·방향의 빈칸만 채워주는 서포터예요.
           </p>
         </article>
         <article class="feature">
-          <h3>입문자 안전망</h3>
+          <h3>Claude Code·Cursor·데스크탑 Claude</h3>
           <p>
-            위험 명령은 차단, 모든 액션은 되돌릴 수 있게. 망가뜨릴 걱정 없이 시도하세요.
+            Claude Code·Cursor는 한 번 켜면 자동으로, 데스크탑 Claude는 확장(.mcpb) 한 번 설치하면 코치가 붙어요.
           </p>
         </article>
         <article class="feature">
-          <h3>30+ 시작 레시피</h3>
+          <h3>사람에게만, 한국어로</h3>
           <p>
-            디스코드 봇 · 자기소개 페이지 · 사진 일괄 리사이즈... 첫 작품을 5~30분 안에.
+            AI를 떠밀지 않고 당신에게만 코칭해요. 앱에서 방금 한 턴을 라이브 카드로 보여줘요.
           </p>
         </article>
       </section>
 
       <section class="stages" id="flow">
-        <h2>입문자 10단계 여정 전구간을 책임집니다</h2>
+        <h2>대신 풀어주는 게 아니라, 어디서 막혔는지 짚어줘요</h2>
         <p class="lead">
-          한 단계라도 막히면 코딩을 포기합니다. TG는 그 모든 막힘을 미리 풀어둡니다.
+          환경 준비부터 배포까지 — 매 단계 코치가 옆에서 흐름을 짚어줍니다. 직접 하되, 빈칸은 코치가 채워줘요.
         </p>
         <ol class="stage-list">
-          <li><strong>STAGE 0</strong>인지·동기 형성</li>
-          <li><strong>STAGE 1</strong>환경 자동 진단</li>
-          <li><strong>STAGE 2</strong>첫 프로젝트 선택</li>
-          <li><strong>STAGE 3</strong>도구 자동 설치</li>
-          <li><strong>STAGE 4</strong>AI 연결 (MCP)</li>
-          <li><strong>STAGE 5</strong>첫 코드 받기</li>
-          <li><strong>STAGE 6</strong>실행·결과 확인</li>
-          <li><strong>STAGE 7</strong>에러·디버깅</li>
-          <li><strong>STAGE 8</strong>완성·배포</li>
-          <li><strong>STAGE 9</strong>반복·성장·졸업</li>
+          <li><strong>STEP 1</strong>환경 준비</li>
+          <li><strong>STEP 2</strong>첫 프로젝트</li>
+          <li><strong>STEP 3</strong>만들기</li>
+          <li><strong>STEP 4</strong>실행·확인</li>
+          <li><strong>STEP 5</strong>배포</li>
         </ol>
       </section>
 
       <footer>
         <p>
-          베타 메일링: <a href="mailto:beta@terminalguardian.kr">beta@terminalguardian.kr</a>
+          문의: <a href="mailto:admin@vibemate.kr">admin@vibemate.kr</a>
         </p>
-        <p>© 2026 TG Project · 가코드명, 정식 브랜드 Week 4~5 확정</p>
+        <p>
+          <a href="/privacy.html">개인정보 처리방침</a> ·
+          <a href="/terms.html">이용약관</a>
+        </p>
+        <p>© 2026 Vibemate</p>
       </footer>
     </div>
 
     <script>
-      // 환경설정 — Cloudflare Pages 배포 시 BACKEND_URL 을 환경변수 또는 빌드 치환.
-      // 기본값은 production 도메인. 로컬 dev 시엔 localStorage 로 override 가능.
-      const DEFAULT_BACKEND = "https://tg-backend.mickeys67.workers.dev";
+      // 백엔드 — 운영 도메인 (CORS credentials 필요해서 같은 zone 의 api 사용).
+      const DEFAULT_BACKEND = "https://api.vibemate.kr";
       const BACKEND =
-        localStorage.getItem("tg.backend.override") || DEFAULT_BACKEND;
+        localStorage.getItem("vm.backend.override") || DEFAULT_BACKEND;
 
       function detectPlatform() {
         const ua = navigator.userAgent.toLowerCase();
         const platform = (navigator.platform || "").toLowerCase();
         if (ua.includes("win") || platform.includes("win")) return "win";
-        if (ua.includes("mac") || platform.includes("mac")) {
-          // Apple Silicon 추정: navigator.userAgentData (Chromium) 또는
-          // userAgent의 'Intel Mac OS X' 부재로 판별.
-          // 100% 정확하지 않으니 universal 빌드를 우선 제공.
-          return "mac";
-        }
+        if (ua.includes("mac") || platform.includes("mac")) return "mac";
         if (ua.includes("linux") || platform.includes("linux")) return "linux";
         return null;
       }
 
       function platformLabel(p) {
         switch (p) {
-          case "win":
-            return "Windows용 다운로드 (.exe)";
-          case "mac":
-            return "Mac용 다운로드 (.dmg)";
-          case "linux":
-            return "Linux용 다운로드 (.AppImage)";
-          default:
-            return "다운로드";
+          case "win": return "Windows용 다운로드 (.msi)";
+          case "mac": return "Mac용 다운로드 (.dmg)";
+          case "linux": return "Linux용 다운로드 (.AppImage)";
+          default: return "다운로드";
         }
       }
 
-      async function init() {
+      function showLoggedIn(me) {
+        document.getElementById("cta-anon").style.display = "none";
+        document.getElementById("welcome-panel").style.display = "block";
+        document.getElementById("nav-logout").style.display = "inline";
+
+        document.getElementById("welcome-name").textContent = me.user.name || me.user.email.split("@")[0];
+        document.getElementById("welcome-email").textContent = me.user.email;
+        document.getElementById("member-number").textContent = me.user.memberNumber;
+        document.getElementById("total-members").textContent = me.totalMembers;
+
+        const avatar = document.getElementById("welcome-avatar");
+        if (me.user.picture) {
+          avatar.src = me.user.picture;
+        } else {
+          avatar.style.display = "none";
+        }
+      }
+
+      function showAnonymous() {
+        document.getElementById("cta-anon").style.display = "inline-flex";
+        document.getElementById("welcome-panel").style.display = "none";
+        document.getElementById("nav-logout").style.display = "none";
+
+        const params = new URLSearchParams(location.search);
+        // login_required 쿼리 = 다운로드 게이트에서 튕긴 사용자
+        if (params.get("login_required")) {
+          const cta = document.getElementById("cta-anon");
+          // 중복 추가 방지 (재로드 시).
+          if (!cta.querySelector(".login-required-note")) {
+            const note = document.createElement("p");
+            note.className = "login-required-note";
+            note.style.cssText = "color:var(--primary-dark);font-size:13px;margin-top:8px";
+            note.textContent = "다운로드를 받으려면 먼저 로그인해주세요.";
+            cta.appendChild(note);
+          }
+        }
+        // download_error = 자산 매칭 실패 (예: Linux 빌드 누락 등)
+        if (params.get("download_error") === "missing") {
+          const platform = params.get("platform") || "?";
+          const cta = document.getElementById("cta-anon");
+          if (!cta.querySelector(".download-error-note")) {
+            const note = document.createElement("p");
+            note.className = "download-error-note";
+            note.style.cssText = "color:#dc2626;font-size:13px;margin-top:8px;line-height:1.5";
+            note.innerHTML = `해당 OS (${platform}) 자산을 찾지 못했어요. 잠시 후 다시 시도하거나 <a href="https://github.com/mickeys67-svg/aiguardian/releases/latest" target="_blank" rel="noopener" style="color:#dc2626;text-decoration:underline">GitHub Releases</a> 에서 직접 받으세요.`;
+            cta.appendChild(note);
+          }
+        }
+      }
+
+      async function wireDownloads() {
         const detected = detectPlatform();
         const primary = document.getElementById("primary-download");
         const primaryLabel = document.getElementById("primary-label");
         const primaryMeta = document.getElementById("primary-meta");
         const versionEl = document.getElementById("version");
 
-        // 모든 다운로드 링크 wiring
         const links = {
           win: document.getElementById("dl-win"),
+          "win-msi": document.getElementById("dl-win-msi"),
           mac: document.getElementById("dl-mac"),
           "mac-arm": document.getElementById("dl-mac-arm"),
           "mac-intel": document.getElementById("dl-mac-intel"),
-          linux: document.getElementById("dl-linux"),
         };
         for (const [k, el] of Object.entries(links)) {
-          el.href = `${BACKEND}/download/${k}`;
+          if (el) el.href = `${BACKEND}/download/${k}`;
         }
 
-        // 메타 가져오기 (실패해도 GitHub Releases 전체 페이지로 fallback)
+        // GitHub Releases 페이지 (전체 자산 목록) — 최후의 fallback.
+        const RELEASES_URL = "https://github.com/mickeys67-svg/aiguardian/releases/latest";
+        // Tauri Updater 가 사용하는 정적 자산 — rate limit 무관, 항상 최신.
+        // platforms.{key}.url 가 실제 OS별 자산 직링크를 가리킴.
+        const LATEST_JSON_URL = "https://github.com/mickeys67-svg/aiguardian/releases/latest/download/latest.json";
+
+        // OS detected → latest.json 의 platforms 키.
+        const PLATFORM_KEY = {
+          win: "windows-x86_64-nsis",
+          mac: "darwin-aarch64-app",
+          linux: "linux-x86_64-appimage",
+        };
+
+        // /latest 실패 시 latest.json 직접 fetch → OS별 자산 URL 추출.
+        async function fallbackToLatestJson() {
+          try {
+            const r = await fetch(LATEST_JSON_URL, { mode: "cors" });
+            if (!r.ok) return null;
+            const meta = await r.json();
+            versionEl.textContent = `v${meta.version}`;
+            const key = PLATFORM_KEY[detected];
+            const url = meta.platforms?.[key]?.url;
+            return url ? { version: meta.version, url } : null;
+          } catch (_) {
+            return null;
+          }
+        }
+
         try {
-          const res = await fetch(`${BACKEND}/latest`, { mode: "cors" });
+          const res = await fetch(`${BACKEND}/latest`);
           if (res.ok) {
             const meta = await res.json();
             versionEl.textContent = `v${meta.version}`;
             primaryMeta.textContent = `최신 v${meta.version} · ${meta.assets.length}개 자산 · 무료`;
+            if (detected) {
+              primary.href = `${BACKEND}/download/${detected}`;
+              primaryLabel.textContent = platformLabel(detected);
+            } else {
+              primary.href = RELEASES_URL;
+              primaryLabel.textContent = "GitHub Releases 에서 다운로드";
+            }
           } else {
-            // 503 = release 없음. 베타 시작 전.
-            primaryLabel.textContent = "곧 다운로드 가능 — 베타 메일링 신청";
-            primary.href = "mailto:beta@terminalguardian.kr";
-            return;
+            // 백엔드 503 → latest.json 으로 직접 fallback (사용자에게 OS 별 직링크 제공).
+            const fb = await fallbackToLatestJson();
+            if (fb && detected) {
+              primary.href = fb.url;
+              primaryLabel.textContent = platformLabel(detected);
+              primaryMeta.textContent = `최신 v${fb.version} · 직접 다운로드`;
+            } else {
+              primaryLabel.textContent = "GitHub Releases 에서 다운로드";
+              primaryMeta.textContent = "백엔드 점검 중 — 직접 다운로드";
+              primary.href = RELEASES_URL;
+            }
           }
         } catch (e) {
-          // 백엔드 연결 안 됨. 메일링으로 fallback.
-          primaryLabel.textContent = "곧 다운로드 가능 — 베타 메일링 신청";
-          primary.href = "mailto:beta@terminalguardian.kr";
-          return;
+          // 네트워크 / CORS 실패 — latest.json 시도 후 페이지 fallback.
+          const fb = await fallbackToLatestJson();
+          if (fb && detected) {
+            primary.href = fb.url;
+            primaryLabel.textContent = platformLabel(detected);
+            primaryMeta.textContent = `최신 v${fb.version} · 직접 다운로드`;
+          } else {
+            primaryLabel.textContent = "GitHub Releases 에서 다운로드";
+            primaryMeta.textContent = "백엔드 연결 실패 — 직접 다운로드";
+            primary.href = RELEASES_URL;
+          }
+        }
+      }
+
+      async function init() {
+        // Google 로그인 버튼 — 백엔드 OAuth 시작.
+        document.getElementById("btn-google").addEventListener("click", () => {
+          location.href = `${BACKEND}/auth/google`;
+        });
+
+        // 로그아웃.
+        document.getElementById("nav-logout").addEventListener("click", async (e) => {
+          e.preventDefault();
+          await fetch(`${BACKEND}/auth/logout`, { method: "POST", credentials: "include" });
+          location.reload();
+        });
+
+        // 세션 확인.
+        let me = null;
+        try {
+          const res = await fetch(`${BACKEND}/me`, { credentials: "include" });
+          if (res.ok) me = await res.json();
+        } catch (e) {
+          // 백엔드 다운 또는 CORS — 비로그인 처리.
         }
 
-        if (detected) {
-          primary.href = `${BACKEND}/download/${detected}`;
-          primaryLabel.textContent = platformLabel(detected);
+        if (me && me.authenticated) {
+          showLoggedIn(me);
+          await wireDownloads();
         } else {
-          primaryLabel.textContent = "다운로드";
-          primary.href = "#download";
+          showAnonymous();
         }
       }
 
