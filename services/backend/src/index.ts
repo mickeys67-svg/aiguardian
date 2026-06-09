@@ -6,6 +6,13 @@ import {
   getLatestRelease,
   pickAsset,
 } from "./github.js";
+import {
+  googleStart,
+  googleCallback,
+  meHandler,
+  logoutHandler,
+  loadSession,
+} from "./auth.js";
 
 type Bindings = {
   DB?: D1Database;
@@ -14,14 +21,54 @@ type Bindings = {
   GH_REPO?: string;
   GH_TOKEN?: string;
   PURGE_TOKEN?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  WEB_ORIGIN?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use("*", cors({ origin: "*", allowHeaders: ["content-type"] }));
+// 보안 헤더 — 모든 응답에 일괄 적용.
+app.use("*", async (c, next) => {
+  await next();
+  c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("X-Frame-Options", "DENY");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  c.header("Permissions-Policy", "interest-cohort=()");
+});
+
+// CORS — 운영 도메인 화이트리스트. credentials 허용 (세션 쿠키).
+const ALLOWED_ORIGINS = [
+  "https://vibemate.kr",
+  "https://www.vibemate.kr",
+  "https://tg-landing.pages.dev",
+  "http://localhost:1420",
+  "http://localhost:4321",
+  "http://localhost:5173",
+  "tauri://localhost",
+];
+app.use(
+  "*",
+  cors({
+    // 화이트리스트 외 origin 은 null 반환 → 브라우저 CORS 거부 (credentials wildcard 함정 방어).
+    origin: (origin) => (ALLOWED_ORIGINS.includes(origin) ? origin : null),
+    allowHeaders: ["content-type"],
+    credentials: true,
+  }),
+);
+
+// ────────────────────────────────────────────────────────────────────────────
+// 인증 — Google OAuth + 세션
+// ────────────────────────────────────────────────────────────────────────────
+
+app.get("/auth/google", googleStart);
+app.get("/auth/google/callback", googleCallback);
+app.get("/me", meHandler);
+app.post("/auth/logout", logoutHandler);
 
 app.get("/health", (c) =>
-  c.json({ ok: true, service: "tg-backend", version: "0.1.0" }),
+  c.json({ ok: true, service: "tg-backend", name: "Vibemate Backend", version: "0.2.5" }),
 );
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -117,11 +164,18 @@ app.get("/latest", async (c) => {
 });
 
 /**
- * 사용자 OS별 다운로드 진입점.
+ * 사용자 OS별 다운로드 진입점 — 로그인 필수 (정식 서비스).
  *   /download/win, /download/mac, /download/mac-arm, /download/mac-intel, /download/linux
- * GitHub Releases 자산 URL로 302 redirect.
+ * 인증 후 GitHub Releases 자산 URL로 302 redirect + downloads 로그.
  */
 app.get("/download/:platform", async (c) => {
+  // 인증 게이트 — 로그인 안 했으면 로그인 화면으로.
+  const session = await loadSession(c);
+  if (!session) {
+    const webOrigin = c.env.WEB_ORIGIN || "https://vibemate.kr";
+    return c.redirect(`${webOrigin}/?login_required=1`, 302);
+  }
+
   const platform = c.req.param("platform");
   const release = await getLatestRelease(c.env);
   if (!release) {
@@ -133,6 +187,9 @@ app.get("/download/:platform", async (c) => {
       case "win":
       case "windows":
         return pickAsset(release, "windows");
+      case "win-msi":
+        // AhnLab/V3 등 NSIS 차단 회피용 MSI 강제.
+        return pickAsset(release, "windows", undefined, "msi");
       case "mac":
         return pickAsset(release, "macos", "universal");
       case "mac-arm":
@@ -149,11 +206,31 @@ app.get("/download/:platform", async (c) => {
   })();
 
   if (!asset) {
-    return c.json(
-      { error: "no matching asset", platform, release: release.tag_name },
-      404,
+    // 자산 누락 시 JSON 직접 노출 대신 랜딩으로 redirect → 사용자 메시지 표시.
+    const webOrigin = (c.env.WEB_ORIGIN || "https://vibemate.kr").trim();
+    return c.redirect(
+      `${webOrigin}/?download_error=missing&platform=${encodeURIComponent(platform)}`,
+      302,
     );
   }
+
+  // 다운로드 로그 + 카운터.
+  if (c.env.DB) {
+    await c.env.DB.batch([
+      c.env.DB.prepare(
+        "INSERT INTO downloads (user_id, platform, version, user_agent) VALUES (?1, ?2, ?3, ?4)",
+      ).bind(
+        session.user_id,
+        platform,
+        release.tag_name,
+        c.req.header("user-agent") ?? null,
+      ),
+      c.env.DB.prepare(
+        "UPDATE users SET download_count = download_count + 1 WHERE id = ?1",
+      ).bind(session.user_id),
+    ]);
+  }
+
   return c.redirect(asset.browser_download_url, 302);
 });
 
@@ -236,11 +313,21 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
+/** Constant-time 문자열 비교 — timing attack 방어. */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 /** GitHub Actions release 직후 캐시 무효화. Bearer 토큰 필요. */
 app.post("/admin/purge", async (c) => {
   const auth = c.req.header("authorization") ?? "";
   const token = auth.replace(/^Bearer\s+/i, "");
-  if (!c.env.PURGE_TOKEN || token !== c.env.PURGE_TOKEN) {
+  if (!c.env.PURGE_TOKEN || !timingSafeEqual(token, c.env.PURGE_TOKEN)) {
     return c.json({ error: "unauthorized" }, 401);
   }
   const body = await c.req.json().catch(() => ({}));
@@ -251,4 +338,14 @@ app.post("/admin/purge", async (c) => {
   return c.json({ purged: key });
 });
 
-export default app;
+// Cron — 만료 세션 자동 정리 (매일 자정 KST).
+export default {
+  fetch: app.fetch,
+  async scheduled(_event: ScheduledEvent, env: Bindings, _ctx: ExecutionContext) {
+    if (!env.DB) return;
+    const result = await env.DB.prepare(
+      "DELETE FROM sessions WHERE expires_at < datetime('now')",
+    ).run();
+    console.log(`[cron] expired sessions cleanup: ${result.meta.changes ?? 0} rows`);
+  },
+};
