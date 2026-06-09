@@ -42,7 +42,7 @@ export function track(event: EventName, props: Record<string, unknown> = {}): vo
     event,
     anonId: anonId(),
     timestamp: new Date().toISOString(),
-    appVersion: "0.1.0",
+    appVersion: "0.3.0",
     props,
   });
   // sendBeacon 은 페이지 unload 에도 안전하지만 데스크톱 앱에선 fetch 도 OK.

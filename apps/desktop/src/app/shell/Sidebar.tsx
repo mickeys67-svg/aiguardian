@@ -16,8 +16,8 @@ export function Sidebar() {
   return (
     <aside className="w-56 shrink-0 border-r border-subtle/15 bg-surface flex flex-col">
       <div className="px-5 py-4 border-b border-subtle/10">
-        <p className="font-bold text-ink text-lg">TG</p>
-        <p className="text-[11px] text-subtle">v0.1 · Terminal Guardian</p>
+        <p className="font-bold text-ink text-lg">Vibemate</p>
+        <p className="text-[11px] text-subtle">v0.3 · 코치</p>
       </div>
       <nav className="flex-1 py-3">
         {ITEMS.map((item) => (
